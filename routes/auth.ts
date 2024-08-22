@@ -64,8 +64,14 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email });
     console.log('User found in database:', user);
 
-    if (!user || !await bcrypt.compare(password, user.password)) {
-      console.log('Invalid credentials');
+    if (!user) {
+      console.log('User not found');
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log('Password mismatch');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -73,17 +79,16 @@ router.post('/login', async (req, res) => {
     const refreshToken = generateRefreshToken(user._id.toString());
     console.log('Tokens generated:', { accessToken, refreshToken });
 
-    // Updated cookie settings for development and production environments
     res.cookie('token', accessToken, {
       httpOnly: true, 
-      secure: isProduction, // only set secure flag in production
-      sameSite: isProduction ? 'strict' : 'lax', // 'Lax' for development, 'Strict' for production
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: isProduction, // only set secure flag in production
-      sameSite: isProduction ? 'strict' : 'lax', // 'Lax' for development, 'Strict' for production
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
     });
 
     console.log('Cookies set successfully');

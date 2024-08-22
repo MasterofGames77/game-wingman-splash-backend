@@ -19,7 +19,7 @@ const corsOptions = {
   origin: (origin: string | undefined, callback: Function) => {
     const whitelist = [
       'http://localhost:3000',
-      'https://vgw-splash-page-frontend-71431835113b.herokuapp.com'
+      'https://vgw-splash-page-frontend-71431835113b.herokuapp.com',
     ];
     if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true);
