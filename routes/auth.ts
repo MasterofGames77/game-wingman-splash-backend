@@ -11,7 +11,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Base URL for password reset emails
 const BASE_URL = isProduction
-  ? 'https://video-game-wingman-splash-page-239457d19a04.herokuapp.com/'  // Update this with your production URL
+  ? 'https://vgw-splash-page-frontend-71431835113b.herokuapp.com/'  // Update this with your production URL
   : 'http://localhost:3000';
 
 router.post('/signup', async (req, res) => {
