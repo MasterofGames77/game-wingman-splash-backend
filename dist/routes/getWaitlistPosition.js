@@ -7,26 +7,25 @@ const express_1 = __importDefault(require("express"));
 const User_1 = __importDefault(require("../models/User"));
 const router = express_1.default.Router();
 router.get('/getWaitlistPosition', async (req, res) => {
-    // Access the user ID from the request
-    const userId = req.user?._id;
-    if (!userId) {
-        return res.status(401).json({ message: 'Unauthorized' });
+    const { email } = req.query;
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
     }
     try {
-        const user = await User_1.default.findById(userId);
+        const user = await User_1.default.findOne({ email });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
         if (user.isApproved) {
-            return res.json({ isApproved: true }); // Return that the user is approved
+            return res.status(200).json({ isApproved: true, message: 'You are approved!', link: 'https://your-ai-assistant-link.com' });
         }
         else {
-            return res.json({ position: user.position, isApproved: false });
+            return res.status(200).json({ position: user.position, isApproved: false, message: `You are on the waitlist. Your position is ${user.position}.` });
         }
     }
     catch (error) {
         console.error('Error retrieving waitlist position:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 exports.default = router;

@@ -4,31 +4,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const User_1 = __importDefault(require("../models/User")); // Import the User model
+const User_1 = __importDefault(require("../models/User"));
 const router = (0, express_1.Router)();
 router.post('/waitlist', async (req, res) => {
-    // Access the user from the middleware
-    const user = req.user;
-    if (!user) {
-        return res.status(401).json({ message: 'Unauthorized' });
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
     }
     try {
-        const existingUser = await User_1.default.findOne({ email: user.email });
+        const existingUser = await User_1.default.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'Email is already on the waitlist' });
         }
         const position = await User_1.default.countDocuments() + 1;
-        // Create a new user with the correct schema properties
         const newUser = new User_1.default({
-            email: user.email,
-            password: user.password, // Assuming the password is hashed at this point
+            email,
             position,
             isApproved: false,
         });
         await newUser.save();
-        res.status(200).json({ message: 'Email added to the waitlist', position });
+        res.status(201).json({ message: 'Congratulations! You\'ve been added to the waitlist.', position });
     }
     catch (err) {
+        console.error('Error adding email to waitlist:', err);
         res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
