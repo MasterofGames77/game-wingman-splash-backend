@@ -34,8 +34,30 @@ router.post('/signup', async (req, res) => {
       });
     }
 
+    // Function to determine the correct ordinal suffix
+  function getOrdinalSuffix(position: number): string {
+    const remainder10 = position % 10;
+    const remainder100 = position % 100;
+
+    if (remainder10 === 1 && remainder100 !== 11) {
+      return `${position}st`;
+    } else if (remainder10 === 2 && remainder100 !== 12) {
+      return `${position}nd`;
+    } else if (remainder10 === 3 && remainder100 !== 13) {
+      return `${position}rd`;
+    } else {
+      return `${position}th`;
+    }
+  }
+
     // If the user doesn't exist, add them to the waitlist
     const position = await User.countDocuments() + 1;
+
+    let bonusMessage = '';
+  if (position <= 50000) {
+    const ordinalPosition = getOrdinalSuffix(position);
+    bonusMessage = `You are the ${ordinalPosition} of the first 50,000 users to sign up! You will receive 1 year of Wingman Pro for free!`;
+  }
 
     const newUser = new User({
       email,
@@ -46,7 +68,7 @@ router.post('/signup', async (req, res) => {
     await newUser.save();
     console.log('New user saved to database');
 
-    res.status(201).json({ message: 'Congratulations! You\'ve been added to the waitlist.' });
+    res.status(201).json({ message: `Congratulations! You've been added to the waitlist. ${bonusMessage}`, position });
   } catch (err) {
     console.error('Error during signup:', err);
     res.status(500).json({ message: 'Error adding email to the waitlist' });
