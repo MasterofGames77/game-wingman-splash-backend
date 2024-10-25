@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 // Define an interface for the User document
 export interface IUser extends Document {
+  hasProAccess: boolean;
   email: string;
   position: number | null; // Allow null for the position
   isApproved: boolean; // Add this field to track approval status

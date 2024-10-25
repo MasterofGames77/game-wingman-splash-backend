@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import waitlistRoutes from './routes/waitlist';
 import getWaitlistPositionRoute from './routes/getWaitlistPosition';
 import approveUserRoute from './routes/approveUser';
+import { connectToWingmanDB, connectToSplashDB } from './utils/databaseConnections';
 
 dotenv.config();
 
@@ -35,13 +36,39 @@ app.use(cors(corsOptions));
 // Middleware
 app.use(express.json()); // Keep this to parse JSON bodies
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI!)
-  .then(() => console.log('MongoDB connected successfully'))
+// MongoDB connection to Splash Page MongoDB
+mongoose.connect(process.env.MONGO_URI!)  // This connects to the Splash Page MongoDB
+  .then(() => console.log('MongoDB (Splash Page) connected successfully'))
   .catch((err: any) => {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB connection error (Splash Page):', err);
     process.exit(1); // Exit process with failure code if MongoDB connection fails
   });
+
+// Connecting to Video Game Wingman DB
+const setupWingmanDBConnection = async () => {
+  try {
+    await connectToWingmanDB();  // Connect to the Wingman DB
+    console.log('Video Game Wingman DB connected successfully');
+  } catch (error) {
+    console.error('Error connecting to Video Game Wingman DB:', error);
+    process.exit(1);  // Exit if connection fails
+  }
+};
+
+// Connecting to Splash Page DB (explicit call)
+const setupSplashDBConnection = async () => {
+  try {
+    await connectToSplashDB();  // Connect to the Splash Page DB
+    console.log('Splash Page DB connected successfully');
+  } catch (error) {
+    console.error('Error connecting to Splash Page DB:', error);
+    process.exit(1);  // Exit if connection fails
+  }
+};
+
+// Call the functions to connect to both databases
+setupWingmanDBConnection();
+setupSplashDBConnection();
 
 // Routes logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
