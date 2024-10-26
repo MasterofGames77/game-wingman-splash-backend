@@ -15,11 +15,17 @@
 
 //   // Find the user by email in the splash page DB
 //   const splashUser = await SplashUser.findOne({ email: wingmanUser.email });
+
+//   // Check if the user is approved in the splash page DB
 //   if (splashUser && splashUser.isApproved) {
-//     // Update Pro Access in Wingman DB
-//     wingmanUser.hasProAccess = true;
-//     await wingmanUser.save();
-//     console.log(`${wingmanUser.email} has been granted Pro Access in Video Game Wingman.`);
+//     // Update Pro Access in Wingman DB only if approved
+//     if (!wingmanUser.hasProAccess) {  // Only update if not already set
+//       wingmanUser.hasProAccess = true;
+//       await wingmanUser.save();
+//       console.log(`${wingmanUser.email} has been granted Pro Access in Video Game Wingman.`);
+//     } else {
+//       console.log(`${wingmanUser.email} already has Pro Access.`);
+//     }
 //   } else {
 //     console.log(`${wingmanUser.email} does not have Pro Access in the splash page.`);
 //   }
