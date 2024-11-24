@@ -1,34 +1,41 @@
-// import { connectToSplashDB } from '../utils/databaseConnections';
-// import User, { IUser } from '../models/User';  // Import IUser for typing
+import { connectToSplashDB, connectToWingmanDB } from '../utils/databaseConnections';
+import SplashUser from '../models/User';
 
-// const checkProAccess = async (userId: string) => {
-//   // Find the user in the Wingman DB and type it with IUser
-//   const wingmanUser = await User.findOne({ userId }) as IUser | null;
+const checkProAccess = async (userId: string): Promise<void> => {
+  try {
+    // Connect to Wingman DB
+    const assistantDB = await connectToWingmanDB();
+    const assistantUser = await assistantDB.collection('userID').findOne({ userId });
 
-//   if (!wingmanUser) {
-//     throw new Error('User not found in Video Game Wingman database.');
-//   }
+    if (!assistantUser) {
+      throw new Error('User not found in Video Game Wingman database.');
+    }
 
-//   // Connect to Splash Page DB to check Pro Access
-//   const splashConnection = await connectToSplashDB();
-//   const SplashUser = splashConnection.model('User', User.schema);
+    // Connect to Splash Page DB
+    const splashDB = await connectToSplashDB();
+    const SplashUserModel = splashDB.model('User', SplashUser.schema);
+    const splashUser = await SplashUserModel.findOne({ email: assistantUser.email });
 
-//   // Find the user by email in the splash page DB
-//   const splashUser = await SplashUser.findOne({ email: wingmanUser.email });
+    if (!splashUser) {
+      throw new Error('User not found in Splash Page database.');
+    }
 
-//   // Check if the user is approved in the splash page DB
-//   if (splashUser && splashUser.isApproved) {
-//     // Update Pro Access in Wingman DB only if approved
-//     if (!wingmanUser.hasProAccess) {  // Only update if not already set
-//       wingmanUser.hasProAccess = true;
-//       await wingmanUser.save();
-//       console.log(`${wingmanUser.email} has been granted Pro Access in Video Game Wingman.`);
-//     } else {
-//       console.log(`${wingmanUser.email} already has Pro Access.`);
-//     }
-//   } else {
-//     console.log(`${wingmanUser.email} does not have Pro Access in the splash page.`);
-//   }
-// };
+    if (splashUser.isApproved && !assistantUser.hasProAccess) {
+      // Update Pro Access in Assistant DB
+      await assistantDB
+        .collection('userID')
+        .updateOne({ userId }, { $set: { hasProAccess: true } });
 
-// export default checkProAccess;
+      console.log(`Pro Access granted for user ${assistantUser.email}.`);
+    } else if (!splashUser.isApproved) {
+      console.log(`User ${assistantUser.email} is not approved for Pro Access.`);
+    } else {
+      console.log(`User ${assistantUser.email} already has Pro Access.`);
+    }
+  } catch (error) {
+    console.error('Error checking Pro Access:', error);
+    throw error;
+  }
+};
+
+export default checkProAccess;

@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 // Define an interface for the User document
 export interface IUser extends Document {
+  userId: any;
   hasProAccess: boolean;
   email: string;
   position: number | null; // Allow null for the position
@@ -10,10 +11,12 @@ export interface IUser extends Document {
 }
 
 // Define the User schema
-const userSchema: Schema<IUser> = new Schema({
+const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
-  position: { type: Number, default: null }, // Allow null for the position
+  position: { type: Number, default: null },
   isApproved: { type: Boolean, default: false },
+  hasProAccess: { type: Boolean, default: false }, // Add Pro access tracking
+  userId: { type: String, required: true }, // Add unique userId
 });
 
 const User = mongoose.model<IUser>('User', userSchema, 'users');
