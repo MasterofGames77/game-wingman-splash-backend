@@ -54,9 +54,9 @@ router.post('/signup', async (req, res) => {
     const position = await User.countDocuments() + 1;
 
     let bonusMessage = '';
-  if (position <= 50000) {
+  if (position <= 5000) {
     const ordinalPosition = getOrdinalSuffix(position);
-    bonusMessage = `You are the ${ordinalPosition} of the first 50,000 users to sign up! You will receive 1 year of Wingman Pro for free!`;
+    bonusMessage = `You are the ${ordinalPosition} of the first 5,000 users to sign up! You will receive 1 year of Wingman Pro for free!`;
   }
 
     const newUser = new User({

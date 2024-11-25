@@ -1,24 +1,29 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Define an interface for the User document
 export interface IUser extends Document {
-  userId: any;
-  hasProAccess: boolean;
   email: string;
-  position: number | null; // Allow null for the position
-  isApproved: boolean; // Add this field to track approval status
-  _id: mongoose.Types.ObjectId;
+  userId: string; // Unique identifier for linking with the assistant database
+  position: number | null; // Position on the waitlist
+  isApproved: boolean; // Approval status for accessing the main assistant app
+  hasProAccess: boolean; // Pro access status for users signing up early
 }
 
-// Define the User schema
-const userSchema = new Schema({
-  email: { type: String, required: true, unique: true },
-  position: { type: Number, default: null },
-  isApproved: { type: Boolean, default: false },
-  hasProAccess: { type: Boolean, default: false }, // Add Pro access tracking
-  userId: { type: String, required: true }, // Add unique userId
-});
+const UserSchema = new Schema<IUser>(
+  {
+    email: { type: String, required: true, unique: true },
+    userId: { 
+      type: String, 
+      unique: true, 
+      required: true, 
+      default: () => `user-${Date.now()}` 
+    }, // Generate a unique identifier by default
+    position: { type: Number, default: null }, // Waitlist position, initially null
+    isApproved: { type: Boolean, default: false }, // Default approval status
+    hasProAccess: { type: Boolean, default: false } // Pro access status, initially false
+  },
+  { collection: 'users' } // Specify the collection name in MongoDB
+);
 
-const User = mongoose.model<IUser>('User', userSchema, 'users');
+const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User;
