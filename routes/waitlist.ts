@@ -23,6 +23,7 @@ router.post('/waitlist', async (req: Request, res: Response) => {
       email,
       position,
       isApproved: false,
+      hasProAccess: position <= 5000
     });
 
     await newUser.save();
