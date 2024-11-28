@@ -29,8 +29,9 @@ router.post('/signup', async (req, res) => {
       }
 
       // If the user exists but is not approved
+      const ordinalPosition = getOrdinalSuffix(existingUser.position);
       return res.status(200).json({
-        message: `You have already signed up and are on the waitlist. Your current waitlist position is ${existingUser.position}.`,
+        message: `You have already signed up and are on the waitlist. You are currently ${ordinalPosition} on the waitlist.`,
       });
     }
 
