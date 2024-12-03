@@ -24,7 +24,7 @@ router.post('/signup', async (req, res) => {
       if (existingUser.isApproved) {
         return res.status(200).json({
           message: 'You have already signed up and are approved.',
-          link: 'https://video-game-wingman-57d61bef9e61.herokuapp.com/',
+          link: 'https://videogamewingman.com/',
         });
       }
 
