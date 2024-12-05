@@ -18,7 +18,7 @@ router.get('/getWaitlistPosition', async (req: Request, res: Response) => {
     }
 
     if (user.isApproved) {
-      return res.status(200).json({ isApproved: true, message: 'You are approved!', link: 'https://video-game-wingman-57d61bef9e61.herokuapp.com/' });
+      return res.status(200).json({ isApproved: true, message: 'You are approved!', link: 'https://assistant.videogamewingman.com' });
     } else {
       return res.status(200).json({ position: user.position, isApproved: false, message: `You are on the waitlist. Your position is ${user.position}.` });
     }

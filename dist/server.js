@@ -30,17 +30,16 @@ const corsOptions = {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+    credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
-// Middleware
-app.use(express_1.default.json()); // Keep this to parse JSON bodies
-// MongoDB connection
+app.use(express_1.default.json());
+// MongoDB connection to Splash Page MongoDB
 mongoose_1.default.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected successfully'))
+    .then(() => console.log('MongoDB (Splash Page) connected successfully'))
     .catch((err) => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit process with failure code if MongoDB connection fails
+    console.error('MongoDB connection error (Splash Page):', err);
+    process.exit(1); // Exit if connection fails
 });
 // Routes logging middleware
 app.use((req, res, next) => {

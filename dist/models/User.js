@@ -24,11 +24,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-// Define the User schema
-const userSchema = new mongoose_1.Schema({
+// Define MongoDB schema
+const UserSchema = new mongoose_1.Schema({
     email: { type: String, required: true, unique: true },
-    position: { type: Number, default: null }, // Allow null for the position
+    userId: {
+        type: String,
+        unique: true,
+        required: true,
+        default: () => `user-${Date.now()}` // Generates unique ID using timestamp
+    },
+    position: { type: Number, default: null },
     isApproved: { type: Boolean, default: false },
-});
-const User = mongoose_1.default.model('User', userSchema, 'users');
+    hasProAccess: { type: Boolean, default: false }
+}, { collection: 'users' } // Specifies collection name in MongoDB
+);
+// Create and export model
+const User = mongoose_1.default.models.User || mongoose_1.default.model('User', UserSchema);
 exports.default = User;

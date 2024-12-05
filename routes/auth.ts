@@ -7,7 +7,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Base URL for any future email notifications
 const BASE_URL = isProduction
-  ? 'https://vgw-splash-page-frontend-71431835113b.herokuapp.com/'  // Update this with your production URL
+  ? 'https://videogamewingman.com'  // Update this with your production URL
   : 'http://localhost:3000';
 
 router.post('/signup', async (req, res) => {
@@ -24,7 +24,7 @@ router.post('/signup', async (req, res) => {
       if (existingUser.isApproved) {
         return res.status(200).json({
           message: 'You have already signed up and are approved.',
-          link: 'https://videogamewingman.com/',
+          link: 'https://assistant.videogamewingman.com',
         });
       }
 

@@ -21,6 +21,7 @@ router.post('/waitlist', async (req, res) => {
             email,
             position,
             isApproved: false,
+            hasProAccess: position <= 5000
         });
         await newUser.save();
         res.status(201).json({ message: 'Congratulations! You\'ve been added to the waitlist.', position });
