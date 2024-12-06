@@ -10,22 +10,23 @@ const BASE_URL = isProduction
   ? 'https://videogamewingman.com'  // Update this with your production URL
   : 'http://localhost:3000';
 
-router.post('/signup', async (req, res) => {
-  console.log('Signup request received:', req.body);
-
-  const { email } = req.body;
-
-  try {
-    // Check if the user already exists in the database
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      // If the user exists and is approved
-      if (existingUser.isApproved) {
-        return res.status(200).json({
-          message: 'You have already signed up and are approved.',
-          link: 'https://assistant.videogamewingman.com',
-        });
+  router.post('/signup', async (req, res) => {
+    const { email } = req.body;
+  
+    try {
+      const existingUser = await User.findOne({ email });
+  
+      if (existingUser) {
+        if (existingUser.isApproved) {
+          const queryParams = new URLSearchParams({
+            userId: existingUser.userId,
+            email: existingUser.email
+          }).toString();
+  
+          return res.status(200).json({
+            message: 'You have already signed up and are approved.',
+            link: `https://assistant.videogamewingman.com?${queryParams}`,
+          });
       }
 
       // If the user exists but is not approved
