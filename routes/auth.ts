@@ -7,7 +7,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Base URL for any future email notifications
 const BASE_URL = isProduction
-  ? 'https://videogamewingman.com'  // Update this with your production URL
+  ? 'https://videogamewingman.com'
   : 'http://localhost:3000';
 
   router.post('/signup', async (req, res) => {

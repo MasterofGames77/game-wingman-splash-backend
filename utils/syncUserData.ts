@@ -7,7 +7,7 @@ export const syncUserToWingman = async (splashUser: IUser) => {
   
   // Check pro access eligibility
   const signupDate = new Date(splashUser.userId.split('-')[1]); // Extract date from userId
-  const proDeadline = new Date('2025-01-31T23:59:59.999Z');
+  const proDeadline = new Date('2025-07-31T23:59:59.999Z');
   const hasProAccess = (
     (typeof splashUser.position === 'number' && splashUser.position <= 5000) || // First 5000 users
     signupDate <= proDeadline // Or signed up before deadline
