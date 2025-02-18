@@ -19,6 +19,8 @@ export const syncUserToWingman = async (splashUser: IUser) => {
     frequentAsker: 0,
     rpgEnthusiast: 0,
     bossBuster: 0,
+    platformerPro: 0,
+    survivalSpecialist: 0,
     strategySpecialist: 0,
     actionAficionado: 0,
     battleRoyale: 0,
