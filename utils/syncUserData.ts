@@ -14,6 +14,8 @@ const DEFAULT_PROGRESS = Object.freeze({
   platformerPro: 0,
   survivalSpecialist: 0,
   strategySpecialist: 0,
+  simulationSpecialist: 0,
+  fightingFanatic: 0,
   actionAficionado: 0,
   battleRoyale: 0,
   sportsChampion: 0,
