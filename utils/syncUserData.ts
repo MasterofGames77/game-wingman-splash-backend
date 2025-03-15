@@ -1,4 +1,4 @@
-import { connectToSplashDB, connectToWingmanDB } from './databaseConnections';
+import { connectToWingmanDB } from './databaseConnections';
 import { IUser } from '../models/User';
 import { Db } from 'mongodb';
 

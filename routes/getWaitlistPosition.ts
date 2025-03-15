@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import User, { IUser } from '../models/User';
+import User from '../models/User';
 import NodeCache from 'node-cache';
 import { isEmail } from 'validator';
 

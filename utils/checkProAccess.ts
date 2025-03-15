@@ -1,3 +1,5 @@
+// Obselete
+
 // import { connectToSplashDB, connectToWingmanDB } from '../utils/databaseConnections';
 // import SplashUser from '../models/User';
 
