@@ -27,6 +27,8 @@ const DEFAULT_PROGRESS = Object.freeze({
   horrorHero: 0,
   triviaMaster: 0,
   storySeeker: 0,
+  beatEmUpBrawler: 0,
+  rhythmMaster: 0,
   totalQuestions: 0,
   dailyExplorer: 0,
   speedrunner: 0,
