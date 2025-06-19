@@ -35,7 +35,17 @@ const DEFAULT_PROGRESS = Object.freeze({
   collectorPro: 0,
   dataDiver: 0,
   performanceTweaker: 0,
-  conversationalist: 0
+  conversationalist: 0,
+  proAchievements: {
+    gameMaster: 0,
+    speedDemon: 0,
+    communityLeader: 0,
+    achievementHunter: 0,
+    proStreak: 0,
+    expertAdvisor: 0,
+    genreSpecialist: 0,
+    proContributor: 0
+  }
 });
 
 // Cache pro deadline to avoid creating Date object repeatedly
