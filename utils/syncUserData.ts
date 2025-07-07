@@ -49,7 +49,7 @@ const DEFAULT_PROGRESS = Object.freeze({
 });
 
 // Cache pro deadline to avoid creating Date object repeatedly
-const PRO_DEADLINE = new Date('2025-07-31T23:59:59.999Z').getTime();
+const PRO_DEADLINE = new Date('2025-12-31T23:59:59.999Z').getTime();
 
 export const syncUserToWingman = async (splashUser: IUser) => {
   try {
