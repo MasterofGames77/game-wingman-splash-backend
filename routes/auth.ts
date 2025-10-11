@@ -41,8 +41,8 @@ router.post('/signup', async (req, res) => {
     // Only fetch necessary fields using projection
     const existingUser = await User.findOne(
       { email },
-      { isApproved: 1, position: 1, userId: 1, email: 1 }
-    ).lean().exec() as unknown as Pick<IUser, 'isApproved' | 'position' | 'userId' | 'email'>;
+      { isApproved: 1, position: 1, userId: 1, email: 1, hasProAccess: 1 }
+    ).lean().exec() as unknown as Pick<IUser, 'isApproved' | 'position' | 'userId' | 'email' | 'hasProAccess'>;
 
     if (existingUser) {
       if (existingUser.isApproved) {
@@ -54,6 +54,10 @@ router.post('/signup', async (req, res) => {
         return res.status(200).json({
           message: 'You have already signed up and are approved.',
           link: `https://assistant.videogamewingman.com?${queryParams}`,
+          userId: existingUser.userId,
+          email: existingUser.email,
+          isApproved: true,
+          hasProAccess: existingUser.hasProAccess
         });
       }
 
@@ -85,7 +89,11 @@ router.post('/signup', async (req, res) => {
 
     return res.status(201).json({ 
       message: `Congratulations! You've been added to the waitlist.${bonusMessage}`, 
-      position 
+      position,
+      userId: newUser.userId,
+      email: newUser.email,
+      isApproved: false,
+      hasProAccess
     });
 
   } catch (error) {
