@@ -60,8 +60,8 @@ const syncUserToWingman = async (splashUser) => {
         }
         // Extract timestamp directly from userId for better performance
         const signupTimestamp = parseInt(splashUser.userId.split('-')[1], 10);
-        // Optimize pro access check
-        const hasProAccess = ((typeof splashUser.position === 'number' && splashUser.position <= 5000) ||
+        // Use the hasProAccess from splash page data, with fallback logic
+        const hasProAccess = splashUser.hasProAccess || ((typeof splashUser.position === 'number' && splashUser.position <= 5000) ||
             signupTimestamp <= PRO_DEADLINE);
         // Use updateOne for better performance
         await wingmanDBConnection.collection('users').updateOne({ email: splashUser.email }, {

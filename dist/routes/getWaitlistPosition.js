@@ -22,16 +22,24 @@ router.get('/getWaitlistPosition', async (req, res) => {
         if (cachedResponse) {
             return res.status(200).json(cachedResponse);
         }
-        // Only fetch isApproved and position fields
-        const user = await User_1.default.findOne({ email }, { isApproved: 1, position: 1 }).lean().exec();
+        // Only fetch isApproved, position, userId, and hasProAccess fields
+        const user = await User_1.default.findOne({ email }, { isApproved: 1, position: 1, userId: 1, hasProAccess: 1 }).lean().exec();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
         if (user.isApproved) {
+            const queryParams = new URLSearchParams({
+                earlyAccess: 'true',
+                userId: user.userId,
+                email: email
+            }).toString();
             const response = {
                 isApproved: true,
                 message: 'You are approved!',
-                link: 'https://assistant.videogamewingman.com?earlyAccess=true'
+                link: `https://assistant.videogamewingman.com?${queryParams}`,
+                userId: user.userId,
+                email: email,
+                hasProAccess: user.hasProAccess
             };
             // Cache the response for approved users
             approvedUsersCache.set(email, response);
