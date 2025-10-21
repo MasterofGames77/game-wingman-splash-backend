@@ -24,15 +24,15 @@ router.post('/approveUser', async (req, res) => {
         const originalPosition = user.position;
         const hasProAccess = typeof originalPosition === 'number' && originalPosition <= 5000;
         // Update user in a single operation
-        await User_1.default.findByIdAndUpdate(userId, {
+        const updatedUser = await User_1.default.findByIdAndUpdate(userId, {
             $set: {
                 position: null,
                 isApproved: true,
                 hasProAccess
             }
         }, { new: true });
-        // Sync to Wingman database
-        await (0, syncUserData_1.syncUserToWingman)(user);
+        // Sync to Wingman database with updated user data
+        await (0, syncUserData_1.syncUserToWingman)(updatedUser);
         // Bulk update remaining waitlist users' positions
         const users = await User_1.default.find({ position: { $ne: null } }, { position: 1 }, { sort: { position: 1 } }).lean();
         if (users.length > 0) {
