@@ -36,7 +36,7 @@ router.get('/getWaitlistPosition', async (req: Request, res: Response) => {
       const response = {
         isApproved: true,
         message: 'You are approved!',
-        link: 'https://assistant.videogamewingman.com'
+        link: 'https://assistant.videogamewingman.com?earlyAccess=true'
       };
       // Cache the response for approved users
       approvedUsersCache.set(email, response);

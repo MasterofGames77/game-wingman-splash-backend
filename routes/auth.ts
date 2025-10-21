@@ -47,6 +47,7 @@ router.post('/signup', async (req, res) => {
     if (existingUser) {
       if (existingUser.isApproved) {
         const queryParams = new URLSearchParams({
+          earlyAccess: 'true',
           userId: existingUser.userId,
           email: existingUser.email
         }).toString();

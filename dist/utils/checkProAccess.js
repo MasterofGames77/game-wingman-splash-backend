@@ -1,4 +1,5 @@
 "use strict";
+// Obselete
 // import { connectToSplashDB, connectToWingmanDB } from '../utils/databaseConnections';
 // import SplashUser from '../models/User';
 // const checkProAccess = async (userId: string): Promise<void> => {
