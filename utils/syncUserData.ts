@@ -72,16 +72,20 @@ export const syncUserToWingman = async (splashUser: IUser) => {
       signupTimestamp <= PRO_DEADLINE
     );
     
-    // Use updateOne for better performance
-    await wingmanDBConnection.collection('users').updateOne(
+    console.log(`Syncing user to main application: email=${splashUser.email}, userId=${splashUser.userId}, hasProAccess=${hasProAccess}`);
+    
+    // Use updateOne with upsert - ensure userId is always set correctly
+    const result = await wingmanDBConnection.collection('users').updateOne(
       { email: splashUser.email },
       {
+        $set: {
+          userId: splashUser.userId, // Always update userId if user exists
+          isApproved: true,
+          hasProAccess
+        },
         $setOnInsert: {
           email: splashUser.email,
-          userId: splashUser.userId,
           position: null,
-          isApproved: true,
-          hasProAccess,
           conversationCount: 0,
           achievements: [],
           progress: DEFAULT_PROGRESS
@@ -92,8 +96,14 @@ export const syncUserToWingman = async (splashUser: IUser) => {
         writeConcern: { w: 1 }
       }
     );
+    
+    if (result.upsertedCount > 0) {
+      console.log(`Successfully inserted new user ${splashUser.email} (${splashUser.userId}) into main application database`);
+    } else if (result.matchedCount > 0) {
+      console.log(`Successfully updated existing user ${splashUser.email} with userId ${splashUser.userId} in main application database`);
+    }
   } catch (error) {
-    console.error('Error syncing user to Wingman:', error);
+    console.error(`Error syncing user ${splashUser.email} (${splashUser.userId}) to Wingman:`, error);
     wingmanDBConnection = null;
     throw error;
   }
