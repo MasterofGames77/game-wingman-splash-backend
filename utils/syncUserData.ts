@@ -62,6 +62,8 @@ export const syncUserToWingman = async (splashUser: IUser) => {
     }
     
     // Extract timestamp directly from userId for better performance
+    // Format: user-{timestamp}-{randomSuffix} (new) or user-{timestamp} (old)
+    // The timestamp is always at index 1 after splitting by '-'
     const signupTimestamp = parseInt(splashUser.userId.split('-')[1], 10);
     
     // Use the hasProAccess from splash page data, with fallback logic

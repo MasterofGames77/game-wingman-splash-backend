@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { generateUserId } from '../utils/generateUserId';
 
 // Define user interface
 export interface IUser extends Document {
@@ -17,7 +18,7 @@ const UserSchema = new Schema<IUser>(
       type: String, 
       unique: true, 
       required: true, 
-      default: () => `user-${Date.now()}` // Generates unique ID using timestamp
+      default: generateUserId // Generates unique ID with timestamp + random suffix
     },
     position: { type: Number, default: null },
     isApproved: { type: Boolean, default: false },

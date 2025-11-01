@@ -78,15 +78,43 @@ router.post('/signup', async (req, res) => {
       ? `\nYou are the ${getOrdinalSuffix(position)} of the first 5,000 users to sign up! You will receive 1 year of Wingman Pro for free!`
       : '';
 
-    // Create and save new user
-    const newUser = new User({
-      email,
-      position,
-      isApproved: false,
-      hasProAccess
-    });
+    // Create and save new user with retry logic for duplicate key errors
+    let newUser: IUser | null = null;
+    let retries = 0;
+    const MAX_RETRIES = 3;
+    
+    while (retries < MAX_RETRIES) {
+      try {
+        const user = new User({
+          email,
+          position,
+          isApproved: false,
+          hasProAccess
+        });
 
-    await newUser.save();
+        await user.save();
+        newUser = user;
+        break; // Success, exit retry loop
+      } catch (error: any) {
+        // Check if it's a duplicate key error (MongoDB error code 11000)
+        if (error.code === 11000 && error.keyPattern?.userId) {
+          retries++;
+          if (retries >= MAX_RETRIES) {
+            throw new Error('Failed to generate unique userId after multiple attempts');
+          }
+          // Force regeneration of userId by creating a new User instance
+          // The default function will be called again with a new timestamp/random
+          continue;
+        }
+        // If it's not a userId duplicate error, rethrow
+        throw error;
+      }
+    }
+
+    // TypeScript guard: newUser should always be assigned if we reach here
+    if (!newUser) {
+      throw new Error('Failed to create user');
+    }
 
     return res.status(201).json({ 
       message: `Congratulations! You've been added to the waitlist.${bonusMessage}`, 

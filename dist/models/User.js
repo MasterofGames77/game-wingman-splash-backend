@@ -24,6 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
+const generateUserId_1 = require("../utils/generateUserId");
 // Define MongoDB schema
 const UserSchema = new mongoose_1.Schema({
     email: { type: String, required: true, unique: true },
@@ -31,7 +32,7 @@ const UserSchema = new mongoose_1.Schema({
         type: String,
         unique: true,
         required: true,
-        default: () => `user-${Date.now()}` // Generates unique ID using timestamp
+        default: generateUserId_1.generateUserId // Generates unique ID with timestamp + random suffix
     },
     position: { type: Number, default: null },
     isApproved: { type: Boolean, default: false },
