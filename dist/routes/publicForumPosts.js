@@ -12,22 +12,25 @@ const SPLASH_PAGE_FORUM_ID = process.env.SPLASH_PAGE_FORUM_ID || "forum_17602226
  * GET /api/public/forum-posts
  * Returns posts from a specific forum for preview on the splash page
  * Query params:
- *   - limit: number of posts to return (default: 1, max: 3)
+ *   - limit: number of posts to return (default: 1, max: 1 - loads one at a time)
  *   - offset: number of posts to skip (default: 0) - for pagination
  *
  * Usage:
  *   - Initial load: GET /api/public/forum-posts?limit=1&offset=0 (loads 1st post)
- *   - Load more: GET /api/public/forum-posts?limit=2&offset=1 (loads 2nd and 3rd posts)
+ *   - Load more: GET /api/public/forum-posts?limit=1&offset=1 (loads 2nd post)
+ *   - Load more: GET /api/public/forum-posts?limit=1&offset=2 (loads 3rd post)
+ *   - etc.
  */
 router.get('/public/forum-posts', async (req, res) => {
     try {
         // Parse and validate limit parameter
+        // Always load 1 post at a time for splash page preview
         const limitParam = req.query.limit;
         let limit = 1; // default: show first post initially
         if (limitParam) {
             const parsedLimit = parseInt(String(limitParam), 10);
             if (!isNaN(parsedLimit) && parsedLimit > 0) {
-                limit = Math.min(parsedLimit, 4); // cap at 4 for splash page preview
+                limit = Math.min(parsedLimit, 1); // cap at 1 - load one post at a time
             }
         }
         // Parse and validate offset parameter
@@ -92,11 +95,33 @@ router.get('/public/forum-posts', async (req, res) => {
         const paginatedPosts = sortedPosts.slice(offset, offset + limit);
         // Transform posts to ensure consistent response format
         const previewPosts = paginatedPosts.map((post) => {
+            // Extract likes from metadata.likes (primary) or count metadata.likedBy array (fallback)
+            let likes = 0;
+            if (post.metadata && post.metadata.likes !== undefined && post.metadata.likes !== null) {
+                // Primary: likes stored as number in metadata.likes
+                likes = typeof post.metadata.likes === 'number' ? post.metadata.likes : 0;
+            }
+            else if (post.metadata && post.metadata.likedBy && Array.isArray(post.metadata.likedBy)) {
+                // Fallback: count the likedBy array length
+                likes = post.metadata.likedBy.length;
+            }
+            else if (post.likes !== undefined && post.likes !== null) {
+                // Legacy fallback: check root-level likes
+                if (Array.isArray(post.likes)) {
+                    likes = post.likes.length;
+                }
+                else if (typeof post.likes === 'number') {
+                    likes = post.likes;
+                }
+            }
+            else if (post.likeCount !== undefined && post.likeCount !== null) {
+                likes = typeof post.likeCount === 'number' ? post.likeCount : 0;
+            }
             return {
-                author: post.author || post.postedBy || post.createdBy || 'Anonymous',
-                content: post.content || post.message || post.text || '',
+                author: post.username || post.author || post.postedBy || post.createdBy || 'Anonymous',
+                content: post.message || post.content || post.text || '',
                 timestamp: post.timestamp || post.createdAt || post.date || new Date().toISOString(),
-                likes: post.likes || post.likeCount || 0,
+                likes: likes,
             };
         });
         // Return forum metadata along with posts
