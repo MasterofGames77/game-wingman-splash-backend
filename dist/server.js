@@ -22,21 +22,26 @@ const corsOptions = {
         const whitelist = [
             'http://localhost:3000',
             'https://videogamewingman.com',
+            'https://www.videogamewingman.com',
         ];
-        if (!origin || whitelist.indexOf(origin) !== -1) {
+        // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
+        if (!origin) {
+            return callback(null, true);
+        }
+        // Check if origin is in whitelist
+        if (whitelist.indexOf(origin) !== -1) {
             // Only log CORS in development to reduce console noise
             if (process.env.NODE_ENV === 'development') {
                 console.log(`CORS request from origin: ${origin}`);
             }
-            callback(null, true);
+            return callback(null, true);
         }
-        else {
-            // Always log blocked requests for security monitoring
-            console.warn(`CORS request blocked from origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
+        // Always log blocked requests for security monitoring
+        console.warn(`CORS request blocked from origin: ${origin}`);
+        callback(new Error(`Not allowed by CORS policy. Origin: ${origin}`));
     },
     credentials: true,
+    optionsSuccessStatus: 200, // Some legacy browsers (IE11) choke on 204
 };
 app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
