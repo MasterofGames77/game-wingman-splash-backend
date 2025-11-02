@@ -49,12 +49,17 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // MongoDB connection to Splash Page MongoDB
-mongoose.connect(process.env.MONGO_URI!)
-  .then(() => console.log('MongoDB (Splash Page) connected successfully'))
-  .catch((err: any) => {
-    console.error('MongoDB connection error (Splash Page):', err);
-    process.exit(1); // Exit if connection fails
-  });
+// Don't block server startup if DB connection fails - it will retry when needed
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB (Splash Page) connected successfully'))
+    .catch((err: any) => {
+      console.error('MongoDB connection error (Splash Page):', err.message);
+      // Don't exit - let server start and connections will retry when needed
+    });
+} else {
+  console.warn('MONGO_URI environment variable is not set. Database connections may fail.');
+}
 
 // Routes logging middleware (only in development to reduce console noise)
 if (process.env.NODE_ENV === 'development') {
@@ -86,7 +91,22 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
+// Health check endpoint (for debugging deployment)
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: {
+      hasMongoUri: !!process.env.MONGO_URI,
+      hasWingmanDbUri: !!process.env.MONGODB_URI_WINGMAN,
+      hasSplashForumId: !!process.env.SPLASH_PAGE_FORUM_ID,
+      nodeEnv: process.env.NODE_ENV || 'not set',
+    },
+  });
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`[${new Date().toISOString()}] Server running on port ${port}`);
+  console.log(`Health check: http://localhost:${port}/health`);
 });

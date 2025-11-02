@@ -43,10 +43,19 @@ router.get('/public/forum-posts', async (req, res) => {
             }
         }
         // Connect to main application database
+        if (!process.env.MONGODB_URI_WINGMAN) {
+            return res.status(500).json({
+                success: false,
+                message: 'Database configuration error: MONGODB_URI_WINGMAN not set',
+            });
+        }
         const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
         const db = wingmanDB.db;
         if (!db) {
-            throw new Error('Failed to connect to database');
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to connect to database',
+            });
         }
         // Query the specific forum from the main database
         const forumsCollection = db.collection('forums');

@@ -34,7 +34,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "npx ts-node server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
   "browserslist": {
     "production": [
