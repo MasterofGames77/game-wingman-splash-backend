@@ -11,28 +11,46 @@ const router = (0, express_1.Router)();
 router.post('/approveUser', async (req, res) => {
     try {
         const { userId } = req.body;
-        // Input validation
-        if (!userId || !(0, mongoose_1.isValidObjectId)(userId)) {
+        // Input validation - accept either MongoDB ObjectId or custom userId string
+        if (!userId) {
             return res.status(400).json({ message: 'Valid userId is required' });
         }
-        // Use lean() for better performance and only fetch needed fields
-        const user = await User_1.default.findById(userId).lean().exec();
+        // Try to find user by MongoDB ObjectId first, then by custom userId string
+        let user = null;
+        if ((0, mongoose_1.isValidObjectId)(userId)) {
+            user = await User_1.default.findById(userId).lean().exec();
+        }
+        // If not found by ObjectId, try finding by custom userId string
+        if (!user) {
+            user = await User_1.default.findOne({ userId }).lean().exec();
+        }
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
         // Store original position for pro access check
         const originalPosition = user.position;
         const hasProAccess = typeof originalPosition === 'number' && originalPosition <= 5000;
-        // Update user in a single operation
-        const updatedUser = await User_1.default.findByIdAndUpdate(userId, {
+        // Update user in a single operation - use MongoDB _id for the update
+        const updatedUser = await User_1.default.findByIdAndUpdate(user._id, {
             $set: {
                 position: null,
                 isApproved: true,
                 hasProAccess
             }
         }, { new: true });
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found for update' });
+        }
         // Sync to Wingman database with updated user data
-        await (0, syncUserData_1.syncUserToWingman)(updatedUser);
+        try {
+            await (0, syncUserData_1.syncUserToWingman)(updatedUser);
+            console.log(`Successfully synced user ${updatedUser.email} (${updatedUser.userId}) to main application database`);
+        }
+        catch (syncError) {
+            console.error(`Failed to sync user ${updatedUser.email} (${updatedUser.userId}) to main application:`, syncError);
+            // Continue anyway - user is approved in splash page DB
+            // But log the error so it can be investigated
+        }
         // Bulk update remaining waitlist users' positions
         const users = await User_1.default.find({ position: { $ne: null } }, { position: 1 }, { sort: { position: 1 } }).lean();
         if (users.length > 0) {

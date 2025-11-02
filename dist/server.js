@@ -11,6 +11,8 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const waitlist_1 = __importDefault(require("./routes/waitlist"));
 const getWaitlistPosition_1 = __importDefault(require("./routes/getWaitlistPosition"));
 const approveUser_1 = __importDefault(require("./routes/approveUser"));
+const publicForumPosts_1 = __importDefault(require("./routes/publicForumPosts"));
+// import publicQuestionResponsesRoute from './routes/publicQuestionResponses'; // Commented out - may not be needed for splash page
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
@@ -22,10 +24,14 @@ const corsOptions = {
             'https://videogamewingman.com',
         ];
         if (!origin || whitelist.indexOf(origin) !== -1) {
-            console.log(`CORS request from origin: ${origin}`);
+            // Only log CORS in development to reduce console noise
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`CORS request from origin: ${origin}`);
+            }
             callback(null, true);
         }
         else {
+            // Always log blocked requests for security monitoring
             console.warn(`CORS request blocked from origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
@@ -41,16 +47,24 @@ mongoose_1.default.connect(process.env.MONGO_URI)
     console.error('MongoDB connection error (Splash Page):', err);
     process.exit(1); // Exit if connection fails
 });
-// Routes logging middleware
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
-    next();
-});
+// Routes logging middleware (only in development to reduce console noise)
+if (process.env.NODE_ENV === 'development') {
+    app.use((req, res, next) => {
+        console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
+        next();
+    });
+}
 // Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api', waitlist_1.default);
 app.use('/api', getWaitlistPosition_1.default);
 app.use('/api', approveUser_1.default);
+app.use('/api', publicForumPosts_1.default);
+// app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
+// Debug: Log registered routes (development only)
+if (process.env.NODE_ENV === 'development') {
+    console.log('Registered public forum posts route: /api/public/forum-posts');
+}
 // Global error-handling middleware
 app.use((err, req, res, next) => {
     console.error(`[${new Date().toISOString()}] Global error handler:`, err.stack);
