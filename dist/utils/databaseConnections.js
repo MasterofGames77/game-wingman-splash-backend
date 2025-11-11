@@ -13,8 +13,8 @@ const connectionOptions = {
     maxPoolSize: 10,
     minPoolSize: 2,
     socketTimeoutMS: 45000,
-    connectTimeoutMS: 10000,
-    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 30000, // Increased from 10000
+    serverSelectionTimeoutMS: 30000, // Increased from 5000 to handle network delays
     heartbeatFrequencyMS: 10000,
     retryWrites: true,
     w: 'majority'
@@ -68,17 +68,27 @@ const connectToWingmanDB = async () => {
             console.error('Video Game Wingman DB connection error:', error);
             wingmanDB.readyState === 0 && process.env.NODE_ENV === 'production' && process.exit(1);
         });
-        // Wait for connection to be ready
-        await new Promise((resolve) => {
+        // Wait for connection to be ready with timeout
+        await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('Connection timeout: Failed to connect to Video Game Wingman DB within 30 seconds'));
+            }, 30000);
             wingmanDB.once('connected', () => {
+                clearTimeout(timeout);
                 console.log('Connected to Video Game Wingman DB');
                 resolve();
+            });
+            wingmanDB.once('error', (error) => {
+                clearTimeout(timeout);
+                reject(error);
             });
         });
         return wingmanDB;
     }
     catch (error) {
         console.error('Failed to connect to Video Game Wingman DB:', error);
+        // Reset connection so it can be retried
+        wingmanDB = undefined;
         throw error;
     }
 };
