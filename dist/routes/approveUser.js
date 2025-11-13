@@ -7,6 +7,8 @@ const express_1 = require("express");
 const User_1 = __importDefault(require("../models/User"));
 const syncUserData_1 = require("../utils/syncUserData");
 const mongoose_1 = require("mongoose");
+const sendEmail_1 = require("../utils/sendEmail");
+const emailTemplates_1 = require("../utils/emailTemplates");
 const router = (0, express_1.Router)();
 router.post('/approveUser', async (req, res) => {
     try {
@@ -50,6 +52,15 @@ router.post('/approveUser', async (req, res) => {
             console.error(`Failed to sync user ${updatedUser.email} (${updatedUser.userId}) to main application:`, syncError);
             // Continue anyway - user is approved in splash page DB
             // But log the error so it can be investigated
+        }
+        // Send approval notification email (non-blocking)
+        try {
+            const emailContent = (0, emailTemplates_1.getApprovalNotificationEmail)(updatedUser.email, updatedUser.userId, hasProAccess);
+            await (0, sendEmail_1.sendEmail)(updatedUser.email, emailContent.subject, emailContent.html, emailContent.text);
+        }
+        catch (emailError) {
+            // Log error but don't fail the approval
+            console.error('Failed to send approval notification email:', emailError);
         }
         // Bulk update remaining waitlist users' positions
         const users = await User_1.default.find({ position: { $ne: null } }, { position: 1 }, { sort: { position: 1 } }).lean();

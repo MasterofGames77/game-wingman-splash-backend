@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import User, { IUser } from '../models/User';
 import { isEmail } from 'validator';
+import { sendEmail } from '../utils/sendEmail';
+import { getSignupConfirmationEmail } from '../utils/emailTemplates';
 
 const router = Router();
 
@@ -58,7 +60,8 @@ router.post('/signup', async (req, res) => {
           userId: existingUser.userId,
           email: existingUser.email,
           isApproved: true,
-          hasProAccess: existingUser.hasProAccess
+          hasProAccess: existingUser.hasProAccess,
+          emailSent: false // No email sent for existing users
         });
       }
 
@@ -66,6 +69,7 @@ router.post('/signup', async (req, res) => {
       const ordinalPosition = getOrdinalSuffix(existingUser.position);
       return res.status(200).json({
         message: `You have already signed up and are on the waitlist. You are currently ${ordinalPosition} on the waitlist.`,
+        emailSent: false // No email sent for existing users
       });
     }
 
@@ -116,13 +120,35 @@ router.post('/signup', async (req, res) => {
       throw new Error('Failed to create user');
     }
 
+    // Send signup confirmation email (non-blocking) - ONLY for new signups
+    let emailSent = false;
+    try {
+      const emailContent = getSignupConfirmationEmail(
+        newUser.email,
+        position,
+        hasProAccess
+      );
+      await sendEmail(
+        newUser.email,
+        emailContent.subject,
+        emailContent.html,
+        emailContent.text
+      );
+      emailSent = true; // Email was successfully sent
+    } catch (emailError) {
+      // Log error but don't fail the signup
+      console.error('Failed to send signup confirmation email:', emailError);
+      emailSent = false; // Email failed to send
+    }
+
     return res.status(201).json({ 
       message: `Congratulations! You've been added to the waitlist.${bonusMessage}`, 
       position,
       userId: newUser.userId,
       email: newUser.email,
       isApproved: false,
-      hasProAccess
+      hasProAccess,
+      emailSent // Email sent for new signups only (true if successful, false if failed)
     });
 
   } catch (error) {

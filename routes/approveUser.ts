@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import User, { IUser } from '../models/User';
 import { syncUserToWingman } from '../utils/syncUserData';
 import { isValidObjectId } from 'mongoose';
+import { sendEmail } from '../utils/sendEmail';
+import { getApprovalNotificationEmail } from '../utils/emailTemplates';
 
 const router = Router();
 
@@ -54,6 +56,24 @@ router.post('/approveUser', async (req: Request, res: Response) => {
       console.error(`Failed to sync user ${updatedUser.email} (${updatedUser.userId}) to main application:`, syncError);
       // Continue anyway - user is approved in splash page DB
       // But log the error so it can be investigated
+    }
+
+    // Send approval notification email (non-blocking)
+    try {
+      const emailContent = getApprovalNotificationEmail(
+        updatedUser.email,
+        updatedUser.userId,
+        hasProAccess
+      );
+      await sendEmail(
+        updatedUser.email,
+        emailContent.subject,
+        emailContent.html,
+        emailContent.text
+      );
+    } catch (emailError) {
+      // Log error but don't fail the approval
+      console.error('Failed to send approval notification email:', emailError);
     }
 
     // Bulk update remaining waitlist users' positions
