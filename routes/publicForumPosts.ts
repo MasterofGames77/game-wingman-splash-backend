@@ -115,11 +115,11 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
     const allPosts = forum.posts || [];
     
     // Sort posts by timestamp (if available) or keep original order
-    // Posts should be sorted chronologically (oldest first, typically)
+    // Posts should be sorted chronologically (newest first) so new posts from splash page appear at the top
     const sortedPosts = [...allPosts].sort((a: any, b: any) => {
       const timeA = a.timestamp || a.createdAt || a.date || 0;
       const timeB = b.timestamp || b.createdAt || b.date || 0;
-      return timeA - timeB; // Ascending order (oldest first)
+      return timeB - timeA; // Descending order (newest first)
     });
 
     // Apply pagination: slice posts array based on offset and limit
