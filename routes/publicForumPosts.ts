@@ -3,6 +3,7 @@ import { connectToWingmanDB } from '../utils/databaseConnections';
 import User from '../models/User';
 import { isEmail } from 'validator';
 import { ObjectId } from 'mongodb';
+import { checkContentModeration } from '../utils/contentModeration';
 
 const router = Router();
 
@@ -333,6 +334,17 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
       });
     }
 
+    // Check content moderation
+    const moderationResult = await checkContentModeration(content);
+    if (!moderationResult.isSafe) {
+      return res.status(400).json({
+        success: false,
+        message: moderationResult.message || 'Your post contains inappropriate content. Please remove any offensive words or phrases and try again.',
+        detectedWords: moderationResult.detectedWords,
+        moderationWarning: true,
+      });
+    }
+
     // Verify user exists
     const user = await User.findOne({ userId }).lean().exec() as any;
     if (!user) {
@@ -462,6 +474,17 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
       return res.status(400).json({
         success: false,
         message: 'Post content is required',
+      });
+    }
+
+    // Check content moderation
+    const moderationResult = await checkContentModeration(content);
+    if (!moderationResult.isSafe) {
+      return res.status(400).json({
+        success: false,
+        message: moderationResult.message || 'Your post contains inappropriate content. Please remove any offensive words or phrases and try again.',
+        detectedWords: moderationResult.detectedWords,
+        moderationWarning: true,
       });
     }
 

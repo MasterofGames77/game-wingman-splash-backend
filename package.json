@@ -35,7 +35,8 @@
     "start": "node dist/server.js",
     "dev": "npx ts-node server.ts",
     "build": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "test:moderation": "npx ts-node test-content-moderation.ts"
   },
   "browserslist": {
     "production": [

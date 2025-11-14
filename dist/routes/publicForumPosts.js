@@ -8,6 +8,7 @@ const databaseConnections_1 = require("../utils/databaseConnections");
 const User_1 = __importDefault(require("../models/User"));
 const validator_1 = require("validator");
 const mongodb_1 = require("mongodb");
+const contentModeration_1 = require("../utils/contentModeration");
 const router = (0, express_1.Router)();
 // Specific forum to showcase on splash page
 // Forum: "Favorite Hero in Xenoblade Chronicles 3"
@@ -304,6 +305,16 @@ router.post('/public/forum-posts', async (req, res) => {
                 message: 'Post content is required',
             });
         }
+        // Check content moderation
+        const moderationResult = await (0, contentModeration_1.checkContentModeration)(content);
+        if (!moderationResult.isSafe) {
+            return res.status(400).json({
+                success: false,
+                message: moderationResult.message || 'Your post contains inappropriate content. Please remove any offensive words or phrases and try again.',
+                detectedWords: moderationResult.detectedWords,
+                moderationWarning: true,
+            });
+        }
         // Verify user exists
         const user = await User_1.default.findOne({ userId }).lean().exec();
         if (!user) {
@@ -417,6 +428,16 @@ router.put('/public/forum-posts/:postId', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Post content is required',
+            });
+        }
+        // Check content moderation
+        const moderationResult = await (0, contentModeration_1.checkContentModeration)(content);
+        if (!moderationResult.isSafe) {
+            return res.status(400).json({
+                success: false,
+                message: moderationResult.message || 'Your post contains inappropriate content. Please remove any offensive words or phrases and try again.',
+                detectedWords: moderationResult.detectedWords,
+                moderationWarning: true,
             });
         }
         if (!mongodb_1.ObjectId.isValid(postId)) {
