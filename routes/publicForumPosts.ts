@@ -153,6 +153,19 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
         isLiked = post.metadata.likedBy.includes(userId);
       }
       
+      // Extract attachments from metadata.attachments
+      const attachments = (post.metadata && post.metadata.attachments && Array.isArray(post.metadata.attachments))
+        ? post.metadata.attachments
+        : [];
+      
+      // Extract edited status and timestamp
+      const isEdited = post.metadata && post.metadata.edited === true;
+      const editedAt = post.metadata && post.metadata.editedAt 
+        ? post.metadata.editedAt 
+        : (post.metadata && post.metadata.lastEdited 
+          ? post.metadata.lastEdited 
+          : null);
+      
       return {
         postId: post._id?.toString() || null,
         author: post.username || post.author || post.postedBy || post.createdBy || 'Anonymous',
@@ -160,6 +173,9 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
         timestamp: post.timestamp || post.createdAt || post.date || new Date().toISOString(),
         likes: likes,
         isLiked: isLiked, // Add this field
+        attachments: attachments, // Include image attachments
+        edited: isEdited, // Whether the post has been edited
+        editedAt: editedAt, // Timestamp when the post was last edited (null if never edited)
       };
     });
 
@@ -282,6 +298,18 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
 
     if (userPost) {
       // User has a post - return it so they can edit/delete
+      const attachments = (userPost.metadata && userPost.metadata.attachments && Array.isArray(userPost.metadata.attachments))
+        ? userPost.metadata.attachments
+        : [];
+      
+      // Extract edited status and timestamp
+      const isEdited = userPost.metadata && userPost.metadata.edited === true;
+      const editedAt = userPost.metadata && userPost.metadata.editedAt 
+        ? userPost.metadata.editedAt 
+        : (userPost.metadata && userPost.metadata.lastEdited 
+          ? userPost.metadata.lastEdited 
+          : null);
+      
       return res.status(200).json({
         success: true,
         canPost: false,
@@ -290,6 +318,9 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
         post: {
           content: userPost.message || userPost.content || '',
           timestamp: userPost.timestamp || userPost.createdAt,
+          attachments: attachments,
+          edited: isEdited,
+          editedAt: editedAt,
         },
       });
     }
@@ -537,6 +568,8 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
     // Update the post
     const updatePath = `posts.${postIndex}.message`;
     const metadataPath = `posts.${postIndex}.metadata.edited`;
+    const editedAtPath = `posts.${postIndex}.metadata.editedAt`;
+    const editedTimestamp = new Date();
 
     const result = await forumsCollection.updateOne(
       { forumId: SPLASH_PAGE_FORUM_ID },
@@ -544,6 +577,7 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
         $set: {
           [updatePath]: content.trim(),
           [metadataPath]: true,
+          [editedAtPath]: editedTimestamp,
           updatedAt: new Date(),
         },
       }
