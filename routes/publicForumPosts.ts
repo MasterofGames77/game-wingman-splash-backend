@@ -96,8 +96,6 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
       // Debug logging only in development mode
       if (process.env.NODE_ENV === 'development') {
         console.log('Forum not found by forumId:', SPLASH_PAGE_FORUM_ID);
-        const sampleForums = await forumsCollection.find({}, { projection: { forumId: 1, title: 1 } }).limit(5).toArray();
-        console.log('Sample forums in database:', sampleForums);
       }
       
       return res.status(404).json({
@@ -346,10 +344,12 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
  * Body:
  *   - userId: user's userId
  *   - content: post content/message
+ *   - attachments: array of image attachment objects (optional)
+ *     Each attachment should have: { url, name, size, type }
  */
 router.post('/public/forum-posts', async (req: Request, res: Response) => {
   try {
-    const { userId, content } = req.body;
+    const { userId, content, attachments } = req.body;
 
     if (!userId || typeof userId !== 'string') {
       return res.status(400).json({
@@ -363,6 +363,52 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
         success: false,
         message: 'Post content is required',
       });
+    }
+
+    // Validate attachments if provided
+    let validatedAttachments: any[] = [];
+    if (attachments) {
+      if (!Array.isArray(attachments)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Attachments must be an array',
+        });
+      }
+
+      // Splash page users can only have 1 image
+      if (attachments.length > 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Splash page users can only upload 1 image per post',
+        });
+      }
+
+      // Validate each attachment
+      for (const attachment of attachments) {
+        if (!attachment.url || typeof attachment.url !== 'string') {
+          return res.status(400).json({
+            success: false,
+            message: 'Each attachment must have a valid URL',
+          });
+        }
+
+        // Basic URL validation
+        try {
+          new URL(attachment.url);
+        } catch {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid attachment URL format',
+          });
+        }
+
+        validatedAttachments.push({
+          url: attachment.url,
+          name: attachment.name || 'image',
+          size: attachment.size || 0,
+          type: attachment.type || 'image/jpeg',
+        });
+      }
     }
 
     // Check content moderation
@@ -435,7 +481,7 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
         edited: false,
         likes: 0,
         likedBy: [],
-        attachments: [],
+        attachments: validatedAttachments, // Store validated attachments
         status: 'active',
       },
     };
@@ -469,6 +515,7 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
         content: newPost.message,
         timestamp: newPost.timestamp,
         likes: 0,
+        attachments: validatedAttachments,
       },
     });
   } catch (error) {
@@ -488,11 +535,13 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
  * Body:
  *   - userId: user's userId (for verification)
  *   - content: updated post content
+ *   - attachments: array of image attachment objects (optional)
+ *     Each attachment should have: { url, name, size, type }
  */
 router.put('/public/forum-posts/:postId', async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const { userId, content } = req.body;
+    const { userId, content, attachments } = req.body;
 
     if (!userId || typeof userId !== 'string') {
       return res.status(400).json({
@@ -501,22 +550,94 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
       });
     }
 
-    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+    // Allow empty message if attachments are provided (like social media posts)
+    // But also allow message + attachments together (normal case)
+    const hasMessage = content && typeof content === 'string' && content.trim().length > 0;
+    const hasAttachments = attachments && Array.isArray(attachments) && attachments.length > 0;
+
+    if (!hasMessage && !hasAttachments) {
       return res.status(400).json({
         success: false,
-        message: 'Post content is required',
+        message: 'Post content is required, or you must provide at least one image',
       });
     }
 
-    // Check content moderation
-    const moderationResult = await checkContentModeration(content);
-    if (!moderationResult.isSafe) {
+    // Validate message length if provided
+    if (content && content.length > 5000) {
       return res.status(400).json({
         success: false,
-        message: moderationResult.message || 'Your post contains inappropriate content. Please remove any offensive words or phrases and try again.',
-        detectedWords: moderationResult.detectedWords,
-        moderationWarning: true,
+        message: 'Post content too long (max 5000 characters)',
       });
+    }
+
+    // Validate attachments if provided
+    let validatedAttachments: any[] = [];
+    if (attachments !== undefined) {
+      if (!Array.isArray(attachments)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Attachments must be an array',
+        });
+      }
+
+      // Splash page users can only have 1 image
+      if (attachments.length > 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Splash page users can only upload 1 image per post',
+        });
+      }
+
+      // Validate each attachment structure (matching main app validation)
+      for (const attachment of attachments) {
+        if (!attachment.type || !attachment.url) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid attachment format. Each attachment must have type and url',
+          });
+        }
+
+        if (attachment.type !== 'image') {
+          return res.status(400).json({
+            success: false,
+            message: 'Only image attachments are currently supported',
+          });
+        }
+
+        // Basic URL validation (matching main app)
+        const isValidUrl = 
+          attachment.url.startsWith('/uploads/forum-images/') ||
+          attachment.url.startsWith('/uploads/automated-images/') ||
+          attachment.url.startsWith('http://') ||
+          attachment.url.startsWith('https://');
+
+        if (!isValidUrl) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid image URL. Images must be uploaded through the upload endpoint or be a valid cloud URL.',
+          });
+        }
+
+        validatedAttachments.push({
+          type: 'image',
+          url: attachment.url,
+          name: attachment.name || 'image',
+          size: attachment.size || 0,
+        });
+      }
+    }
+
+    // Check content moderation (only if message is provided)
+    if (hasMessage) {
+      const moderationResult = await checkContentModeration(content);
+      if (!moderationResult.isSafe) {
+        return res.status(400).json({
+          success: false,
+          message: moderationResult.message || 'Your post contains inappropriate content. Please remove any offensive words or phrases and try again.',
+          detectedWords: moderationResult.detectedWords,
+          moderationWarning: true,
+        });
+      }
     }
 
     if (!ObjectId.isValid(postId)) {
@@ -565,21 +686,33 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
       });
     }
 
-    // Update the post
-    const updatePath = `posts.${postIndex}.message`;
-    const metadataPath = `posts.${postIndex}.metadata.edited`;
-    const editedAtPath = `posts.${postIndex}.metadata.editedAt`;
-    const editedTimestamp = new Date();
+    // Update the post using positional operator ($) to update only the specific post
+    const updateFields: any = {
+      [`posts.${postIndex}.metadata.edited`]: true,
+      [`posts.${postIndex}.metadata.editedAt`]: new Date(),
+      [`posts.${postIndex}.metadata.editedBy`]: userId,
+      updatedAt: new Date(),
+    };
 
+    // Always update message if provided (preserve existing message when adding images)
+    // If message is provided (even if empty string), update it to preserve user's intent
+    if (content !== undefined && typeof content === 'string') {
+      updateFields[`posts.${postIndex}.message`] = content.trim();
+    }
+
+    // Update attachments if provided (allows removing images by sending empty array)
+    if (attachments !== undefined) {
+      updateFields[`posts.${postIndex}.metadata.attachments`] = validatedAttachments;
+    }
+
+    // Use findOneAndUpdate with positional operator to update only the specific post
     const result = await forumsCollection.updateOne(
-      { forumId: SPLASH_PAGE_FORUM_ID },
+      { 
+        forumId: SPLASH_PAGE_FORUM_ID,
+        'posts._id': new ObjectId(postId)
+      },
       {
-        $set: {
-          [updatePath]: content.trim(),
-          [metadataPath]: true,
-          [editedAtPath]: editedTimestamp,
-          updatedAt: new Date(),
-        },
+        $set: updateFields,
       }
     );
 

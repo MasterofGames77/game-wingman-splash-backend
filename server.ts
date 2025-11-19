@@ -7,6 +7,7 @@ import waitlistRoutes from './routes/waitlist';
 import getWaitlistPositionRoute from './routes/getWaitlistPosition';
 import approveUserRoute from './routes/approveUser';
 import publicForumPostsRoute from './routes/publicForumPosts';
+import uploadForumImageRoute from './routes/uploadForumImage';
 // import publicQuestionResponsesRoute from './routes/publicQuestionResponses'; // Commented out - may not be needed for splash page
 
 dotenv.config();
@@ -61,10 +62,13 @@ if (process.env.MONGO_URI) {
   console.warn('MONGO_URI environment variable is not set. Database connections may fail.');
 }
 
-// Routes logging middleware (only in development to reduce console noise)
+// Routes logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {
   app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
+    if (req.method === 'PUT' || req.method === 'POST') {
+      console.log('Request body keys:', Object.keys(req.body || {}));
+    }
     next();
   });
 }
@@ -74,6 +78,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api', waitlistRoutes);
 app.use('/api', getWaitlistPositionRoute);
 app.use('/api', approveUserRoute);
+// Register upload route BEFORE forum posts route to ensure /api/public/forum-posts/upload-image is matched first
+app.use('/api', uploadForumImageRoute);
 app.use('/api', publicForumPostsRoute);
 // app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
 

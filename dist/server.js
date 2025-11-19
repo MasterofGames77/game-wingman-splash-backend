@@ -12,6 +12,7 @@ const waitlist_1 = __importDefault(require("./routes/waitlist"));
 const getWaitlistPosition_1 = __importDefault(require("./routes/getWaitlistPosition"));
 const approveUser_1 = __importDefault(require("./routes/approveUser"));
 const publicForumPosts_1 = __importDefault(require("./routes/publicForumPosts"));
+const uploadForumImage_1 = __importDefault(require("./routes/uploadForumImage"));
 // import publicQuestionResponsesRoute from './routes/publicQuestionResponses'; // Commented out - may not be needed for splash page
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -58,10 +59,13 @@ if (process.env.MONGO_URI) {
 else {
     console.warn('MONGO_URI environment variable is not set. Database connections may fail.');
 }
-// Routes logging middleware (only in development to reduce console noise)
+// Routes logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {
     app.use((req, res, next) => {
         console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
+        if (req.method === 'PUT' || req.method === 'POST') {
+            console.log('Request body keys:', Object.keys(req.body || {}));
+        }
         next();
     });
 }
@@ -70,6 +74,8 @@ app.use('/api/auth', auth_1.default);
 app.use('/api', waitlist_1.default);
 app.use('/api', getWaitlistPosition_1.default);
 app.use('/api', approveUser_1.default);
+// Register upload route BEFORE forum posts route to ensure /api/public/forum-posts/upload-image is matched first
+app.use('/api', uploadForumImage_1.default);
 app.use('/api', publicForumPosts_1.default);
 // app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
 // Debug: Log registered routes (development only)
