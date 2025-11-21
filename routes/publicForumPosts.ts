@@ -7,28 +7,82 @@ import { checkContentModeration } from '../utils/contentModeration';
 
 const router = Router();
 
-// Specific forum to showcase on splash page
-// Forum: "Favorite Hero in Xenoblade Chronicles 3"
-// forumId: "forum_1760222601584_k4k6xncld"
-// This can be moved to an environment variable if needed
-const SPLASH_PAGE_FORUM_ID = process.env.SPLASH_PAGE_FORUM_ID || "forum_1760222601584_k4k6xncld";
+// Available forums to showcase on splash page
+const SPLASH_PAGE_FORUMS = {
+  xenoblade: {
+    forumId: "forum_1760222601584_k4k6xncld",
+    title: "Favorite Hero in Xenoblade Chronicles 3",
+    gameTitle: "Xenoblade Chronicles 3",
+  },
+  eldenring: {
+    forumId: "forum_1763681917979_3qgttdvtr",
+    title: "Elden Ring Lore",
+    gameTitle: "Elden Ring",
+  },
+  apexlegends: {
+    forumId: "forum_1763236973075_bxzzix94i",
+    title: "Apex Legends",
+    gameTitle: "Apex Legends",
+  },
+};
+
+// Default forum (Xenoblade Chronicles 3) for backward compatibility
+const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade.forumId;
+
+/**
+ * Helper function to get and validate forum ID from request
+ * Checks query params first, then body, then defaults to Xenoblade forum
+ */
+function getForumId(req: Request): string {
+  // Try query parameter first
+  const forumIdFromQuery = String(req.query.forumId || '').trim();
+  if (forumIdFromQuery) {
+    // Validate it's one of our allowed forums
+    const isValid = Object.values(SPLASH_PAGE_FORUMS).some(
+      forum => forum.forumId === forumIdFromQuery
+    );
+    if (isValid) {
+      return forumIdFromQuery;
+    }
+  }
+
+  // Try body parameter (for POST/PUT/DELETE requests)
+  const forumIdFromBody = req.body?.forumId;
+  if (forumIdFromBody && typeof forumIdFromBody === 'string') {
+    const trimmed = forumIdFromBody.trim();
+    const isValid = Object.values(SPLASH_PAGE_FORUMS).some(
+      forum => forum.forumId === trimmed
+    );
+    if (isValid) {
+      return trimmed;
+    }
+  }
+
+  // Default to Xenoblade forum for backward compatibility
+  return DEFAULT_FORUM_ID;
+}
 
 /**
  * GET /api/public/forum-posts
  * Returns posts from a specific forum for preview on the splash page
  * Query params:
+ *   - forumId: (optional) forum ID to view (defaults to Xenoblade Chronicles 3 forum)
  *   - limit: number of posts to return (default: 1, max: 1 - loads one at a time)
  *   - offset: number of posts to skip (default: 0) - for pagination
  *   - userId: (optional) user's userId to check if they've liked each post
  * 
  * Usage:
- *   - Initial load: GET /api/public/forum-posts?limit=1&offset=0 (loads 1st post)
+ *   - Initial load: GET /api/public/forum-posts?limit=1&offset=0 (loads 1st post from default forum)
+ *   - With forum selection: GET /api/public/forum-posts?forumId=forum_xxx&limit=1&offset=0
  *   - With user context: GET /api/public/forum-posts?limit=1&offset=0&userId=user-xxx (includes isLiked field)
  *   - Load more: GET /api/public/forum-posts?limit=1&offset=1&userId=user-xxx (loads 2nd post)
  *   - etc.
  */
 router.get('/public/forum-posts', async (req: Request, res: Response) => {
   try {
+    // Get forum ID from query params (with validation and default)
+    const forumId = getForumId(req);
+
     // Get userId from query params (optional)
     const userId = String(req.query.userId || '').trim();
 
@@ -76,7 +130,7 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
     
     // Find the specific forum by forumId (allow private forums for splash page preview)
     const forum = await forumsCollection.findOne(
-      { forumId: SPLASH_PAGE_FORUM_ID },
+      { forumId: forumId },
       {
         projection: {
           _id: 0,
@@ -95,7 +149,7 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
     if (!forum) {
       // Debug logging only in development mode
       if (process.env.NODE_ENV === 'development') {
-        console.log('Forum not found by forumId:', SPLASH_PAGE_FORUM_ID);
+        console.log('Forum not found by forumId:', forumId);
       }
       
       return res.status(404).json({
@@ -103,8 +157,7 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
         message: 'Forum not found for preview',
         ...(process.env.NODE_ENV === 'development' && {
           debug: {
-            searchedForumId: SPLASH_PAGE_FORUM_ID,
-            envVarSet: !!SPLASH_PAGE_FORUM_ID
+            searchedForumId: forumId,
           }
         })
       });
@@ -203,6 +256,32 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/public/forum-posts/available-forums
+ * Returns list of available forums for the splash page
+ */
+router.get('/public/forum-posts/available-forums', async (req: Request, res: Response) => {
+  try {
+    const forums = Object.values(SPLASH_PAGE_FORUMS).map(forum => ({
+      forumId: forum.forumId,
+      title: forum.title,
+      gameTitle: forum.gameTitle,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      forums: forums,
+      defaultForumId: DEFAULT_FORUM_ID,
+    });
+  } catch (error) {
+    console.error('Error fetching available forums:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch available forums',
+    });
+  }
+});
+
+/**
  * GET /api/public/forum-posts/verify-user
  * Verifies if an email is on the waitlist or approved, returns userId
  * Query params:
@@ -250,10 +329,14 @@ router.get('/public/forum-posts/verify-user', async (req: Request, res: Response
  * GET /api/public/forum-posts/check-status
  * Checks if a user can post (hasn't posted yet, or has 1 post they can manage)
  * Query params:
+ *   - forumId: (optional) forum ID to check (defaults to Xenoblade Chronicles 3 forum)
  *   - userId: user's userId
  */
 router.get('/public/forum-posts/check-status', async (req: Request, res: Response) => {
   try {
+    // Get forum ID from query params (with validation and default)
+    const forumId = getForumId(req);
+
     const userId = String(req.query.userId || '').trim();
 
     if (!userId) {
@@ -281,7 +364,7 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
     }
 
     const forumsCollection = db.collection('forums');
-    const forum = await forumsCollection.findOne({ forumId: SPLASH_PAGE_FORUM_ID });
+    const forum = await forumsCollection.findOne({ forumId: forumId });
 
     if (!forum) {
       return res.status(404).json({
@@ -342,6 +425,7 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
  * POST /api/public/forum-posts
  * Creates a new post in the forum
  * Body:
+ *   - forumId: (optional) forum ID to post to (defaults to Xenoblade Chronicles 3 forum)
  *   - userId: user's userId
  *   - content: post content/message
  *   - attachments: array of image attachment objects (optional)
@@ -349,6 +433,8 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
  */
 router.post('/public/forum-posts', async (req: Request, res: Response) => {
   try {
+    // Get forum ID from body (with validation and default)
+    const forumId = getForumId(req);
     const { userId, content, attachments } = req.body;
 
     if (!userId || typeof userId !== 'string') {
@@ -449,7 +535,7 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
     }
 
     const forumsCollection = db.collection('forums');
-    const forum = await forumsCollection.findOne({ forumId: SPLASH_PAGE_FORUM_ID });
+    const forum = await forumsCollection.findOne({ forumId: forumId });
 
     if (!forum) {
       return res.status(404).json({
@@ -488,7 +574,7 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
 
     // Add post to forum's posts array
     const result = await forumsCollection.updateOne(
-      { forumId: SPLASH_PAGE_FORUM_ID },
+      { forumId: forumId },
       {
         $push: { posts: newPost as any },
         $set: {
@@ -533,6 +619,7 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
  * Params:
  *   - postId: MongoDB ObjectId of the post
  * Body:
+ *   - forumId: (optional) forum ID where the post exists (defaults to Xenoblade Chronicles 3 forum)
  *   - userId: user's userId (for verification)
  *   - content: updated post content
  *   - attachments: array of image attachment objects (optional)
@@ -540,6 +627,8 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
  */
 router.put('/public/forum-posts/:postId', async (req: Request, res: Response) => {
   try {
+    // Get forum ID from body (with validation and default)
+    const forumId = getForumId(req);
     const { postId } = req.params;
     const { userId, content, attachments } = req.body;
 
@@ -665,7 +754,7 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
     }
 
     const forumsCollection = db.collection('forums');
-    const forum = await forumsCollection.findOne({ forumId: SPLASH_PAGE_FORUM_ID });
+    const forum = await forumsCollection.findOne({ forumId: forumId });
 
     if (!forum) {
       return res.status(404).json({
@@ -708,7 +797,7 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
     // Use findOneAndUpdate with positional operator to update only the specific post
     const result = await forumsCollection.updateOne(
       { 
-        forumId: SPLASH_PAGE_FORUM_ID,
+        forumId: forumId,
         'posts._id': new ObjectId(postId)
       },
       {
@@ -743,10 +832,13 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
  * Params:
  *   - postId: MongoDB ObjectId of the post
  * Body:
+ *   - forumId: (optional) forum ID where the post exists (defaults to Xenoblade Chronicles 3 forum)
  *   - userId: user's userId (for verification)
  */
 router.delete('/public/forum-posts/:postId', async (req: Request, res: Response) => {
   try {
+    // Get forum ID from body (with validation and default)
+    const forumId = getForumId(req);
     const { postId } = req.params;
     const { userId } = req.body;
 
@@ -782,7 +874,7 @@ router.delete('/public/forum-posts/:postId', async (req: Request, res: Response)
     }
 
     const forumsCollection = db.collection('forums');
-    const forum = await forumsCollection.findOne({ forumId: SPLASH_PAGE_FORUM_ID });
+    const forum = await forumsCollection.findOne({ forumId: forumId });
 
     if (!forum) {
       return res.status(404).json({
@@ -805,7 +897,7 @@ router.delete('/public/forum-posts/:postId', async (req: Request, res: Response)
 
     // Remove the post from the array
     const result = await forumsCollection.updateOne(
-      { forumId: SPLASH_PAGE_FORUM_ID },
+      { forumId: forumId },
       {
         $pull: { posts: { _id: new ObjectId(postId) } } as any,
         $set: {
@@ -841,10 +933,13 @@ router.delete('/public/forum-posts/:postId', async (req: Request, res: Response)
  * Params:
  *   - postId: MongoDB ObjectId of the post
  * Body:
+ *   - forumId: (optional) forum ID where the post exists (defaults to Xenoblade Chronicles 3 forum)
  *   - userId: user's userId (for verification)
  */
 router.post('/public/forum-posts/:postId/like', async (req: Request, res: Response) => {
   try {
+    // Get forum ID from body (with validation and default)
+    const forumId = getForumId(req);
     const { postId } = req.params;
     const { userId } = req.body;
 
@@ -880,7 +975,7 @@ router.post('/public/forum-posts/:postId/like', async (req: Request, res: Respon
     }
 
     const forumsCollection = db.collection('forums');
-    const forum = await forumsCollection.findOne({ forumId: SPLASH_PAGE_FORUM_ID });
+    const forum = await forumsCollection.findOne({ forumId: forumId });
 
     if (!forum) {
       return res.status(404).json({
@@ -925,7 +1020,7 @@ router.post('/public/forum-posts/:postId/like', async (req: Request, res: Respon
     const likedByPath = `posts.${postIndex}.metadata.likedBy`;
 
     const result = await forumsCollection.updateOne(
-      { forumId: SPLASH_PAGE_FORUM_ID },
+      { forumId: forumId },
       {
         $set: {
           [likesPath]: newLikesCount,
