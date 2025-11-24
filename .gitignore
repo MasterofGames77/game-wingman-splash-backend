@@ -5,3 +5,7 @@ bash.exe.stackdump
 publicQuestionResponses.ts
 
 test-content-moderation.ts
+
+EMAIL_SETUP.md
+test-email.ts
+test-approval-email.ts

@@ -25,6 +25,7 @@
     "node": "^20.17.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.14",
+    "resend": "^6.5.2",
     "sharp": "^0.34.5",
     "typescript": "^5.5.4",
     "validator": "^13.12.0"
@@ -43,7 +44,9 @@
     "dev": "npx ts-node server.ts",
     "build": "tsc",
     "postinstall": "npm run build",
-    "test:moderation": "npx ts-node test-content-moderation.ts"
+    "test:moderation": "npx ts-node test-content-moderation.ts",
+    "test:email": "npx ts-node test-email.ts",
+    "test:approval-email": "npx ts-node test-approval-email.ts"
   },
   "browserslist": {
     "production": [
