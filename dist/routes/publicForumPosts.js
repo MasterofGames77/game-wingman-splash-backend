@@ -145,11 +145,49 @@ router.get('/public/forum-posts', async (req, res) => {
         }
         // Extract posts array from forum document
         const allPosts = forum.posts || [];
+        // Helper function to convert timestamp to number (milliseconds since epoch)
+        const getTimestampValue = (post) => {
+            const timestamp = post.timestamp || post.createdAt || post.date;
+            if (!timestamp)
+                return 0;
+            // If it's already a Date object, get time value
+            if (timestamp instanceof Date) {
+                return timestamp.getTime();
+            }
+            // If it's a number, assume it's already milliseconds
+            if (typeof timestamp === 'number') {
+                return timestamp;
+            }
+            // If it's a string, try to parse it as ISO date
+            if (typeof timestamp === 'string') {
+                const parsed = new Date(timestamp);
+                return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+            }
+            return 0;
+        };
+        // Deduplicate posts by _id to prevent showing the same post multiple times
+        const seenPostIds = new Set();
+        const uniquePosts = allPosts.filter((post) => {
+            const postId = post._id?.toString();
+            if (!postId)
+                return true; // Keep posts without IDs (shouldn't happen, but be safe)
+            if (seenPostIds.has(postId)) {
+                return false; // Skip duplicate
+            }
+            seenPostIds.add(postId);
+            return true;
+        });
         // Sort posts by timestamp (if available) or keep original order
         // Posts should be sorted chronologically (newest first) so new posts from splash page appear at the top
-        const sortedPosts = [...allPosts].sort((a, b) => {
-            const timeA = a.timestamp || a.createdAt || a.date || 0;
-            const timeB = b.timestamp || b.createdAt || b.date || 0;
+        const sortedPosts = [...uniquePosts].sort((a, b) => {
+            const timeA = getTimestampValue(a);
+            const timeB = getTimestampValue(b);
+            // If timestamps are equal, use post ID as tiebreaker for stable sort
+            if (timeB === timeA) {
+                const idA = a._id?.toString() || '';
+                const idB = b._id?.toString() || '';
+                return idB.localeCompare(idA); // Descending order for IDs
+            }
             return timeB - timeA; // Descending order (newest first)
         });
         // Apply pagination: slice posts array based on offset and limit

@@ -106,6 +106,7 @@ function getApprovalNotificationEmail(email, userId, hasProAccess) {
         email: email
     }).toString();
     const accessLink = `https://assistant.videogamewingman.com?${queryParams}`;
+    const baseUrl = 'https://assistant.videogamewingman.com';
     const proMessage = hasProAccess
         ? `<div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
          <p style="margin: 0;">
@@ -141,7 +142,7 @@ function getApprovalNotificationEmail(email, userId, hasProAccess) {
         
         <p style="font-size: 14px; color: #777;">
           Or copy and paste this link into your browser:<br>
-          <a href="${accessLink}" style="color: #3498db; word-break: break-all;">${accessLink}</a>
+          <a href="${baseUrl}" style="color: #3498db; word-break: break-all;">${baseUrl}</a>
         </p>
         
         ${proMessage}
@@ -171,9 +172,9 @@ Hi there,
 
 Great news! You've been approved for early access to Video Game Wingman!
 
-You can now start using Video Game Wingman to enhance your gaming experience. Click the link below to get started:
+You can now start using Video Game Wingman to enhance your gaming experience. Visit the link below to get started:
 
-${accessLink}
+${baseUrl}
 
 ${hasProAccess ? '\n🎁 Pro Access Bonus: As one of the first 5,000 users, you have 1 year of Wingman Pro for free!\n' : ''}
 

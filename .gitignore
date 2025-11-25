@@ -9,3 +9,4 @@ test-content-moderation.ts
 EMAIL_SETUP.md
 test-email.ts
 test-approval-email.ts
+dist/
