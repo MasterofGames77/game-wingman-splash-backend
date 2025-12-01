@@ -12,3 +12,5 @@ test-approval-email.ts
 dist/
 
 public/linkedin-posts/
+
+scripts/README.md
