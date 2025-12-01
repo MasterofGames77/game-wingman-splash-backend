@@ -8,13 +8,13 @@ const router = Router();
  * 
  * TODO: Populate with actual post content
  * This will contain:
- * - Series 1: Challenging Parts/Levels/Moments (10 posts)
+ * - Series 1: Toughest Game Series (10 posts)
  * - Series 2: 100% Completion Chronicles (10 posts)
  */
 const LINKEDIN_POSTS: Record<string, LinkedInSeries> = {
   challenging: {
     seriesId: 'challenging',
-    seriesTitle: 'Challenging Parts/Levels/Moments',
+    seriesTitle: 'Toughest Game Series',
     seriesDescription: 'Exploring the most difficult and memorable challenges in video games',
     introPost: {
       id: 0, // Intro posts use id: 0
