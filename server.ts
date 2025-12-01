@@ -8,6 +8,7 @@ import getWaitlistPositionRoute from './routes/getWaitlistPosition';
 import approveUserRoute from './routes/approveUser';
 import publicForumPostsRoute from './routes/publicForumPosts';
 import uploadForumImageRoute from './routes/uploadForumImage';
+import linkedinPostsRoute from './routes/linkedinPosts';
 // import publicQuestionResponsesRoute from './routes/publicQuestionResponses'; // Commented out - may not be needed for splash page
 
 dotenv.config();
@@ -49,6 +50,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Serve static files from public directory
+app.use(express.static('public'));
+
 // MongoDB connection to Splash Page MongoDB
 // Don't block server startup if DB connection fails - it will retry when needed
 if (process.env.MONGO_URI) {
@@ -81,6 +85,7 @@ app.use('/api', approveUserRoute);
 // Register upload route BEFORE forum posts route to ensure /api/public/forum-posts/upload-image is matched first
 app.use('/api', uploadForumImageRoute);
 app.use('/api', publicForumPostsRoute);
+app.use('/api', linkedinPostsRoute);
 // app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
 
 // Debug: Log registered routes (development only)
