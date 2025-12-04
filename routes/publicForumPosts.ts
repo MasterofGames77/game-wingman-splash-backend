@@ -4,6 +4,7 @@ import User from '../models/User';
 import { isEmail } from 'validator';
 import { ObjectId } from 'mongodb';
 import { checkContentModeration } from '../utils/contentModeration';
+import { cachePresets, addETag } from '../utils/cacheHeaders';
 
 const router = Router();
 
@@ -78,7 +79,7 @@ function getForumId(req: Request): string {
  *   - Load more: GET /api/public/forum-posts?limit=1&offset=1&userId=user-xxx (loads 2nd post)
  *   - etc.
  */
-router.get('/public/forum-posts', async (req: Request, res: Response) => {
+router.get('/public/forum-posts', cachePresets.forumPosts, addETag, async (req: Request, res: Response) => {
   try {
     // Get forum ID from query params (with validation and default)
     const forumId = getForumId(req);
@@ -303,7 +304,7 @@ router.get('/public/forum-posts', async (req: Request, res: Response) => {
  * GET /api/public/forum-posts/available-forums
  * Returns list of available forums for the splash page
  */
-router.get('/public/forum-posts/available-forums', async (req: Request, res: Response) => {
+router.get('/public/forum-posts/available-forums', cachePresets.staticContent, addETag, async (req: Request, res: Response) => {
   try {
     const forums = Object.values(SPLASH_PAGE_FORUMS).map(forum => ({
       forumId: forum.forumId,

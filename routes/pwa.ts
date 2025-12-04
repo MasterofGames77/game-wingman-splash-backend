@@ -1,4 +1,6 @@
 import { Request, Response, Router } from 'express';
+import { offlineQueue, QueuedAction } from '../utils/offlineQueue';
+import axios from 'axios';
 
 const router = Router();
 
@@ -272,15 +274,50 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Background sync for offline form submissions
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-forms') {
-    event.waitUntil(syncForms());
-  }
-});
+// Note: Background Sync API requires browser support and proper registration
+if ('sync' in self.registration) {
+  self.addEventListener('sync', (event) => {
+    console.log('[Service Worker] Background sync event:', event.tag);
+    if (event.tag === 'sync-forms' || event.tag.startsWith('sync-queue-')) {
+      event.waitUntil(syncForms(event.tag));
+    }
+  });
+} else {
+  console.warn('[Service Worker] Background Sync API not supported in this browser');
+}
 
-async function syncForms() {
-  // This will be implemented by the frontend
-  console.log('[Service Worker] Syncing forms...');
+async function syncForms(tag) {
+  try {
+    console.log('[Service Worker] Syncing forms with tag:', tag);
+    
+    // Get all pending actions from IndexedDB (frontend should store them)
+    // Then call the backend queue process endpoint
+    const response = await fetch('/api/pwa/queue/process', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ processAll: true })
+    });
+    
+    const result = await response.json();
+    console.log('[Service Worker] Queue processed:', result);
+    
+    if (result.success) {
+      // Notify all clients about successful sync
+      const clients = await self.clients.matchAll();
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'SYNC_COMPLETE',
+          result: result
+        });
+      });
+    }
+  } catch (error) {
+    console.error('[Service Worker] Error syncing forms:', error);
+    // Re-throw to let the browser retry
+    throw error;
+  }
 }
 `;
 
@@ -340,6 +377,8 @@ router.post('/api/pwa/install', async (req: Request, res: Response) => {
  * Returns PWA status and configuration
  */
 router.get('/api/pwa/status', (req: Request, res: Response) => {
+  const queueStats = offlineQueue.getStats();
+  
   const pwaStatus = {
     enabled: true,
     manifest: {
@@ -354,17 +393,259 @@ router.get('/api/pwa/status', (req: Request, res: Response) => {
     features: {
       offline: true,
       installable: true,
-      backgroundSync: true,
+      backgroundSync: true, // Backend supports it, but browser support varies
+      offlineQueue: true,
+      offlineCaching: true,
       pushNotifications: false // Not implemented yet
     },
-    version: '1.0.0',
-    timestamp: new Date().toISOString()
+    queue: {
+      enabled: true,
+      stats: queueStats,
+      endpoints: {
+        queue: '/api/pwa/queue',
+        process: '/api/pwa/queue/process',
+        status: '/api/pwa/queue/status'
+      }
+    },
+    version: '2.0.0', // Updated for Epic 2
+    timestamp: new Date().toISOString(),
+    notes: {
+      backgroundSync: 'Background Sync API support depends on browser. Frontend should check for registration.sync availability before using.'
+    }
   };
 
   res.status(200).json({
     success: true,
     pwa: pwaStatus
   });
+});
+
+/**
+ * POST /api/pwa/queue
+ * Accepts queued actions from offline users
+ * Body:
+ *   - action: string (e.g., 'waitlist-signup', 'forum-post', 'forum-update', 'forum-delete', 'forum-like')
+ *   - endpoint: string (original endpoint path, e.g., '/api/waitlist', '/api/public/forum-posts')
+ *   - method: string (HTTP method: 'POST', 'PUT', 'DELETE')
+ *   - body: object (original request body)
+ *   - headers: object (optional, original request headers)
+ *   - userId: string (optional, user identifier)
+ */
+router.post('/api/pwa/queue', (req: Request, res: Response) => {
+  try {
+    const { action, endpoint, method, body, headers, userId } = req.body;
+
+    // Validation
+    if (!action || typeof action !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Action type is required'
+      });
+    }
+
+    if (!endpoint || typeof endpoint !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Endpoint is required'
+      });
+    }
+
+    if (!method || !['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid HTTP method is required (POST, PUT, DELETE, PATCH)'
+      });
+    }
+
+    if (!body || typeof body !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: 'Request body is required'
+      });
+    }
+
+    // Add action to queue
+    const queuedAction = offlineQueue.addAction(
+      action,
+      endpoint,
+      method.toUpperCase(),
+      body,
+      headers,
+      userId
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Action queued successfully',
+      queueId: queuedAction.id,
+      action: {
+        id: queuedAction.id,
+        action: queuedAction.action,
+        status: queuedAction.status,
+        timestamp: queuedAction.timestamp
+      }
+    });
+  } catch (error) {
+    console.error('Error queueing action:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to queue action'
+    });
+  }
+});
+
+/**
+ * POST /api/pwa/queue/process
+ * Processes queued actions (called when user comes back online)
+ * Body:
+ *   - queueIds: string[] (optional, specific queue IDs to process)
+ *   - userId: string (optional, process all actions for a specific user)
+ *   - processAll: boolean (optional, process all pending actions)
+ */
+router.post('/api/pwa/queue/process', async (req: Request, res: Response) => {
+  try {
+    const { queueIds, userId, processAll } = req.body;
+
+    let actionsToProcess: QueuedAction[] = [];
+
+    if (queueIds && Array.isArray(queueIds)) {
+      // Process specific queue IDs
+      actionsToProcess = queueIds
+        .map((id: string) => offlineQueue.getActionById(id))
+        .filter((action): action is QueuedAction => action !== undefined && action.status === 'pending');
+    } else if (userId && typeof userId === 'string') {
+      // Process all actions for a specific user
+      actionsToProcess = offlineQueue.getActionsByUserId(userId).filter(a => a.status === 'pending');
+    } else if (processAll === true) {
+      // Process all pending actions
+      actionsToProcess = offlineQueue.getPendingActions();
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Either queueIds, userId, or processAll must be provided'
+      });
+    }
+
+    if (actionsToProcess.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No pending actions to process',
+        processed: 0,
+        succeeded: 0,
+        failed: 0
+      });
+    }
+
+    // Process actions
+    const results = {
+      processed: 0,
+      succeeded: 0,
+      failed: 0,
+      errors: [] as Array<{ queueId: string; error: string }>
+    };
+
+    // Get base URL for internal API calls
+    const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+    for (const action of actionsToProcess) {
+      try {
+        // Mark as processing
+        offlineQueue.updateActionStatus(action.id, 'processing');
+
+        // Make the actual API call
+        const response = await axios({
+          method: action.method,
+          url: `${baseUrl}${action.endpoint}`,
+          data: action.body,
+          headers: {
+            'Content-Type': 'application/json',
+            ...action.headers
+          },
+          validateStatus: () => true // Don't throw on any status
+        });
+
+        if (response.status >= 200 && response.status < 300) {
+          // Success
+          offlineQueue.updateActionStatus(action.id, 'completed');
+          results.succeeded++;
+        } else {
+          // Failed
+          const errorMsg = response.data?.message || `HTTP ${response.status}`;
+          offlineQueue.updateActionStatus(action.id, 'failed', errorMsg);
+          results.failed++;
+          results.errors.push({
+            queueId: action.id,
+            error: errorMsg
+          });
+        }
+      } catch (error: any) {
+        // Network or other error
+        const errorMsg = error.message || 'Unknown error';
+        offlineQueue.updateActionStatus(action.id, 'failed', errorMsg);
+        results.failed++;
+        results.errors.push({
+          queueId: action.id,
+          error: errorMsg
+        });
+      }
+
+      results.processed++;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Processed ${results.processed} actions`,
+      ...results
+    });
+  } catch (error) {
+    console.error('Error processing queue:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to process queue'
+    });
+  }
+});
+
+/**
+ * GET /api/pwa/queue/status
+ * Returns queue status and pending actions
+ * Query params:
+ *   - userId: string (optional, filter by user ID)
+ */
+router.get('/api/pwa/queue/status', (req: Request, res: Response) => {
+  try {
+    const { userId } = req.query;
+
+    const stats = offlineQueue.getStats();
+    let actions: QueuedAction[] = [];
+
+    if (userId && typeof userId === 'string') {
+      actions = offlineQueue.getActionsByUserId(userId);
+    } else {
+      actions = offlineQueue.getPendingActions().slice(0, 50); // Limit to 50 for response size
+    }
+
+    return res.status(200).json({
+      success: true,
+      stats,
+      actions: actions.map(action => ({
+        id: action.id,
+        action: action.action,
+        endpoint: action.endpoint,
+        method: action.method,
+        status: action.status,
+        retries: action.retries,
+        timestamp: action.timestamp,
+        userId: action.userId
+      }))
+    });
+  } catch (error) {
+    console.error('Error getting queue status:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get queue status'
+    });
+  }
 });
 
 export default router;

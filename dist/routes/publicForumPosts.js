@@ -9,6 +9,7 @@ const User_1 = __importDefault(require("../models/User"));
 const validator_1 = require("validator");
 const mongodb_1 = require("mongodb");
 const contentModeration_1 = require("../utils/contentModeration");
+const cacheHeaders_1 = require("../utils/cacheHeaders");
 const router = (0, express_1.Router)();
 // Available forums to showcase on splash page
 const SPLASH_PAGE_FORUMS = {
@@ -72,7 +73,7 @@ function getForumId(req) {
  *   - Load more: GET /api/public/forum-posts?limit=1&offset=1&userId=user-xxx (loads 2nd post)
  *   - etc.
  */
-router.get('/public/forum-posts', async (req, res) => {
+router.get('/public/forum-posts', cacheHeaders_1.cachePresets.forumPosts, cacheHeaders_1.addETag, async (req, res) => {
     try {
         // Get forum ID from query params (with validation and default)
         const forumId = getForumId(req);
@@ -273,7 +274,7 @@ router.get('/public/forum-posts', async (req, res) => {
  * GET /api/public/forum-posts/available-forums
  * Returns list of available forums for the splash page
  */
-router.get('/public/forum-posts/available-forums', async (req, res) => {
+router.get('/public/forum-posts/available-forums', cacheHeaders_1.cachePresets.staticContent, cacheHeaders_1.addETag, async (req, res) => {
     try {
         const forums = Object.values(SPLASH_PAGE_FORUMS).map(forum => ({
             forumId: forum.forumId,
