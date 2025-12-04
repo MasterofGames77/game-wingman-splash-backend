@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { LinkedInSeries, LinkedInPost } from '../types';
+import { cachePresets, addETag } from '../utils/cacheHeaders';
 
 const router = Router();
 
@@ -1687,7 +1688,7 @@ It's about finishing everything - one steady ride at a time. 🤠`,
  * GET /api/public/linkedin-posts/series
  * Returns list of available series for the splash page
  */
-router.get('/public/linkedin-posts/series', async (req: Request, res: Response) => {
+router.get('/public/linkedin-posts/series', cachePresets.staticContent, addETag, async (req: Request, res: Response) => {
   try {
     const series = Object.values(LINKEDIN_POSTS).map(series => ({
       seriesId: series.seriesId,
@@ -1723,7 +1724,7 @@ router.get('/public/linkedin-posts/series', async (req: Request, res: Response) 
  *   - Load more: GET /api/public/linkedin-posts?seriesId=challenging&limit=1&offset=1
  *   - Get all: GET /api/public/linkedin-posts?seriesId=challenging&limit=10&offset=0
  */
-router.get('/public/linkedin-posts', async (req: Request, res: Response) => {
+router.get('/public/linkedin-posts', cachePresets.linkedinPosts, addETag, async (req: Request, res: Response) => {
   try {
     // Get series ID from query params
     const seriesIdFromQuery = String(req.query.seriesId || '').trim();
@@ -1804,7 +1805,7 @@ router.get('/public/linkedin-posts', async (req: Request, res: Response) => {
  * Usage:
  *   - GET /api/public/linkedin-posts/intro?seriesId=challenging
  */
-router.get('/public/linkedin-posts/intro', async (req: Request, res: Response) => {
+router.get('/public/linkedin-posts/intro', cachePresets.linkedinPosts, addETag, async (req: Request, res: Response) => {
   try {
     // Get series ID from query params
     const seriesIdFromQuery = String(req.query.seriesId || '').trim();
@@ -1861,7 +1862,7 @@ router.get('/public/linkedin-posts/intro', async (req: Request, res: Response) =
  * Usage:
  *   - GET /api/public/linkedin-posts/1?seriesId=challenging
  */
-router.get('/public/linkedin-posts/:postId', async (req: Request, res: Response) => {
+router.get('/public/linkedin-posts/:postId', cachePresets.linkedinPosts, addETag, async (req: Request, res: Response) => {
   try {
     const postIdParam = req.params.postId;
     const postId = parseInt(postIdParam, 10);
