@@ -32,6 +32,35 @@ const SPLASH_PAGE_FORUMS = {
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
 const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade.forumId;
 /**
+ * Helper function to connect to Wingman database with proper error handling
+ * Returns the database object or throws an error
+ */
+async function getWingmanDatabase() {
+    if (!process.env.MONGODB_URI_WINGMAN) {
+        throw new Error('Database configuration error: MONGODB_URI_WINGMAN not set');
+    }
+    let wingmanDB;
+    try {
+        wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
+    }
+    catch (dbError) {
+        console.error('Database connection error:', dbError);
+        throw new Error(`Failed to connect to database: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`);
+    }
+    // Check if connection is ready
+    if (!wingmanDB || wingmanDB.readyState !== 1) {
+        console.error('Database connection not ready. State:', wingmanDB?.readyState);
+        throw new Error('Database connection not ready');
+    }
+    // Access database - mongoose.Connection has .db property
+    const db = wingmanDB.db || wingmanDB;
+    if (!db) {
+        console.error('Database object not available');
+        throw new Error('Failed to access database');
+    }
+    return db;
+}
+/**
  * Helper function to get and validate forum ID from request
  * Checks query params first, then body, then defaults to Xenoblade forum
  */
@@ -99,18 +128,16 @@ router.get('/public/forum-posts', cacheHeaders_1.cachePresets.forumPosts, cacheH
             }
         }
         // Connect to main application database
-        if (!process.env.MONGODB_URI_WINGMAN) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database configuration error: MONGODB_URI_WINGMAN not set',
-            });
+        let db;
+        try {
+            db = await getWingmanDatabase();
         }
-        const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
-        const db = wingmanDB.db;
-        if (!db) {
+        catch (dbError) {
+            const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+            console.error('Database error in forum-posts:', errorMessage);
             return res.status(500).json({
                 success: false,
-                message: 'Failed to connect to database',
+                message: errorMessage,
             });
         }
         // Query the specific forum from the main database
@@ -262,11 +289,17 @@ router.get('/public/forum-posts', cacheHeaders_1.cachePresets.forumPosts, cacheH
     }
     catch (error) {
         console.error('Error fetching forum posts for preview:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        console.error('Error details:', { message: errorMessage, stack: errorStack });
         return res.status(500).json({
             success: false,
             message: 'Failed to fetch forum posts',
             // Include error details in development only
-            ...(process.env.NODE_ENV === 'development' && { error: error instanceof Error ? error.message : 'Unknown error' })
+            ...(process.env.NODE_ENV === 'development' && {
+                error: errorMessage,
+                stack: errorStack
+            })
         });
     }
 });
@@ -354,17 +387,40 @@ router.get('/public/forum-posts/check-status', async (req, res) => {
             });
         }
         if (!process.env.MONGODB_URI_WINGMAN) {
+            console.error('MONGODB_URI_WINGMAN not set');
             return res.status(500).json({
                 success: false,
-                message: 'Database configuration error',
+                message: 'Database configuration error: MONGODB_URI_WINGMAN not set',
             });
         }
-        const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
-        const db = wingmanDB.db;
-        if (!db) {
+        // Connect to database with better error handling
+        let wingmanDB;
+        try {
+            wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
+        }
+        catch (dbError) {
+            console.error('Database connection error in check-status:', dbError);
             return res.status(500).json({
                 success: false,
                 message: 'Failed to connect to database',
+                error: dbError instanceof Error ? dbError.message : 'Unknown database error',
+            });
+        }
+        // Check if connection is ready
+        if (!wingmanDB || wingmanDB.readyState !== 1) {
+            console.error('Database connection not ready. State:', wingmanDB?.readyState);
+            return res.status(500).json({
+                success: false,
+                message: 'Database connection not ready',
+            });
+        }
+        // Access database - mongoose.Connection has .db property
+        const db = wingmanDB.db || wingmanDB;
+        if (!db) {
+            console.error('Database object not available');
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to access database',
             });
         }
         const forumsCollection = db.collection('forums');
@@ -413,9 +469,13 @@ router.get('/public/forum-posts/check-status', async (req, res) => {
     }
     catch (error) {
         console.error('Error checking post status:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        console.error('Error details:', { message: errorMessage, stack: errorStack });
         return res.status(500).json({
             success: false,
             message: 'Failed to check post status',
+            error: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
         });
     }
 });
@@ -506,18 +566,17 @@ router.post('/public/forum-posts', async (req, res) => {
                 message: 'User not found',
             });
         }
-        if (!process.env.MONGODB_URI_WINGMAN) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database configuration error',
-            });
+        // Connect to main application database
+        let db;
+        try {
+            db = await getWingmanDatabase();
         }
-        const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
-        const db = wingmanDB.db;
-        if (!db) {
+        catch (dbError) {
+            const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+            console.error('Database error:', errorMessage);
             return res.status(500).json({
                 success: false,
-                message: 'Failed to connect to database',
+                message: errorMessage,
             });
         }
         const forumsCollection = db.collection('forums');
@@ -697,18 +756,17 @@ router.put('/public/forum-posts/:postId', async (req, res) => {
                 message: 'Invalid post ID',
             });
         }
-        if (!process.env.MONGODB_URI_WINGMAN) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database configuration error',
-            });
+        // Connect to main application database
+        let db;
+        try {
+            db = await getWingmanDatabase();
         }
-        const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
-        const db = wingmanDB.db;
-        if (!db) {
+        catch (dbError) {
+            const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+            console.error('Database error:', errorMessage);
             return res.status(500).json({
                 success: false,
-                message: 'Failed to connect to database',
+                message: errorMessage,
             });
         }
         const forumsCollection = db.collection('forums');
@@ -797,18 +855,17 @@ router.delete('/public/forum-posts/:postId', async (req, res) => {
                 message: 'Invalid post ID',
             });
         }
-        if (!process.env.MONGODB_URI_WINGMAN) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database configuration error',
-            });
+        // Connect to main application database
+        let db;
+        try {
+            db = await getWingmanDatabase();
         }
-        const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
-        const db = wingmanDB.db;
-        if (!db) {
+        catch (dbError) {
+            const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+            console.error('Database error:', errorMessage);
             return res.status(500).json({
                 success: false,
-                message: 'Failed to connect to database',
+                message: errorMessage,
             });
         }
         const forumsCollection = db.collection('forums');
@@ -881,18 +938,17 @@ router.post('/public/forum-posts/:postId/like', async (req, res) => {
                 message: 'Invalid post ID',
             });
         }
-        if (!process.env.MONGODB_URI_WINGMAN) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database configuration error',
-            });
+        // Connect to main application database
+        let db;
+        try {
+            db = await getWingmanDatabase();
         }
-        const wingmanDB = await (0, databaseConnections_1.connectToWingmanDB)();
-        const db = wingmanDB.db;
-        if (!db) {
+        catch (dbError) {
+            const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+            console.error('Database error:', errorMessage);
             return res.status(500).json({
                 success: false,
-                message: 'Failed to connect to database',
+                message: errorMessage,
             });
         }
         const forumsCollection = db.collection('forums');

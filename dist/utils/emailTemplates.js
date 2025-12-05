@@ -5,6 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSignupConfirmationEmail = getSignupConfirmationEmail;
 exports.getApprovalNotificationEmail = getApprovalNotificationEmail;
+const jwt_1 = require("./jwt");
 /**
  * Gets the ordinal suffix for a position (1st, 2nd, 3rd, etc.)
  */
@@ -100,10 +101,21 @@ The Video Game Wingman Team
  * Generates the approval notification email HTML
  */
 function getApprovalNotificationEmail(email, userId, hasProAccess) {
+    // Generate authentication token for seamless cross-domain auth
+    // Note: Token expires in 10 minutes, but email links might be clicked later
+    // Main app should handle expired tokens gracefully by falling back to userId/email verification
+    let authToken = null;
+    try {
+        authToken = (0, jwt_1.generateCrossDomainAuthToken)(userId, email, true, hasProAccess);
+    }
+    catch (error) {
+        console.warn('Failed to generate auth token for email, using legacy params:', error);
+    }
     const queryParams = new URLSearchParams({
         earlyAccess: 'true',
         userId: userId,
-        email: email
+        email: email,
+        ...(authToken && { token: authToken }) // Include token if generated successfully
     }).toString();
     const accessLink = `https://assistant.videogamewingman.com?${queryParams}`;
     const baseUrl = 'https://assistant.videogamewingman.com';

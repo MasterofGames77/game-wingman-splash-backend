@@ -2,6 +2,8 @@
  * Email templates for Video Game Wingman notifications
  */
 
+import { generateCrossDomainAuthToken } from './jwt';
+
 /**
  * Gets the ordinal suffix for a position (1st, 2nd, 3rd, etc.)
  */
@@ -109,10 +111,21 @@ export function getApprovalNotificationEmail(
   userId: string,
   hasProAccess: boolean
 ): { subject: string; html: string; text: string } {
+  // Generate authentication token for seamless cross-domain auth
+  // Note: Token expires in 10 minutes, but email links might be clicked later
+  // Main app should handle expired tokens gracefully by falling back to userId/email verification
+  let authToken: string | null = null;
+  try {
+    authToken = generateCrossDomainAuthToken(userId, email, true, hasProAccess);
+  } catch (error) {
+    console.warn('Failed to generate auth token for email, using legacy params:', error);
+  }
+
   const queryParams = new URLSearchParams({
     earlyAccess: 'true',
     userId: userId,
-    email: email
+    email: email,
+    ...(authToken && { token: authToken }) // Include token if generated successfully
   }).toString();
   
   const accessLink = `https://assistant.videogamewingman.com?${queryParams}`;

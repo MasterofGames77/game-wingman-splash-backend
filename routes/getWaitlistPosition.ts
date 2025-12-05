@@ -2,10 +2,46 @@ import express, { Request, Response } from 'express';
 import User from '../models/User';
 import NodeCache from 'node-cache';
 import { isEmail } from 'validator';
+import { generateCrossDomainAuthToken } from '../utils/jwt';
 
 const router = express.Router();
 // Cache approved users for 1 hour
 const approvedUsersCache = new NodeCache({ stdTTL: 3600 });
+
+/**
+ * Generates a link to the main assistant app with authentication token
+ * This allows seamless authentication when navigating from splash page to main app
+ */
+function generateAssistantLink(
+  userId: string,
+  email: string,
+  isApproved: boolean,
+  hasProAccess: boolean
+): string {
+  try {
+    // Generate temporary auth token (10 minute expiry)
+    const authToken = generateCrossDomainAuthToken(userId, email, isApproved, hasProAccess);
+    
+    // Build URL with token and legacy params for backward compatibility
+    const queryParams = new URLSearchParams({
+      earlyAccess: 'true',
+      userId: userId,
+      email: email,
+      token: authToken // Main app will use this to authenticate
+    }).toString();
+
+    return `https://assistant.videogamewingman.com?${queryParams}`;
+  } catch (error) {
+    // If JWT_SECRET is not set or token generation fails, fall back to legacy params
+    console.warn('Failed to generate auth token, using legacy params:', error);
+    const queryParams = new URLSearchParams({
+      earlyAccess: 'true',
+      userId: userId,
+      email: email
+    }).toString();
+    return `https://assistant.videogamewingman.com?${queryParams}`;
+  }
+}
 
 router.get('/getWaitlistPosition', async (req: Request, res: Response) => {
   const email = String(req.query.email).toLowerCase().trim();
@@ -33,16 +69,18 @@ router.get('/getWaitlistPosition', async (req: Request, res: Response) => {
     }
 
     if (user.isApproved) {
-      const queryParams = new URLSearchParams({
-        earlyAccess: 'true',
-        userId: user.userId,
-        email: email
-      }).toString();
+      // Generate link with authentication token for seamless cross-domain auth
+      const assistantLink = generateAssistantLink(
+        user.userId,
+        email,
+        true, // isApproved
+        user.hasProAccess
+      );
 
       const response = {
         isApproved: true,
         message: 'You are approved!',
-        link: `https://assistant.videogamewingman.com?${queryParams}`,
+        link: assistantLink,
         userId: user.userId,
         email: email,
         hasProAccess: user.hasProAccess

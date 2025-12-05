@@ -8,6 +8,7 @@ const User_1 = __importDefault(require("../models/User"));
 const validator_1 = require("validator");
 const sendEmail_1 = require("../utils/sendEmail");
 const emailTemplates_1 = require("../utils/emailTemplates");
+const jwt_1 = require("../utils/jwt");
 const router = (0, express_1.Router)();
 const isProduction = process.env.NODE_ENV === 'production';
 // Base URL for any future email notifications
@@ -33,6 +34,48 @@ function getOrdinalSuffix(position) {
         return `${position}th`;
     }
 }
+/**
+ * Generates a link to the main assistant app with authentication token
+ * This allows seamless authentication when navigating from splash page to main app
+ */
+function generateAssistantLink(userId, email, isApproved, hasProAccess) {
+    try {
+        // Generate temporary auth token (10 minute expiry)
+        const authToken = (0, jwt_1.generateCrossDomainAuthToken)(userId, email, isApproved, hasProAccess);
+        // Build URL with token and legacy params for backward compatibility
+        const queryParams = new URLSearchParams({
+            earlyAccess: 'true',
+            userId: userId,
+            email: email,
+            token: authToken // Main app will use this to authenticate
+        }).toString();
+        return `https://assistant.videogamewingman.com?${queryParams}`;
+    }
+    catch (error) {
+        // If JWT_SECRET is not set or token generation fails, fall back to legacy params
+        console.warn('Failed to generate auth token, using legacy params:', error);
+        const queryParams = new URLSearchParams({
+            earlyAccess: 'true',
+            userId: userId,
+            email: email
+        }).toString();
+        return `https://assistant.videogamewingman.com?${queryParams}`;
+    }
+}
+/**
+ * GET /api/auth/verify
+ * Simple verify endpoint for splash page frontend
+ * Splash page is public, so this always returns "not authenticated"
+ * This prevents 404 errors when frontend checks auth status
+ */
+router.get('/verify', (req, res) => {
+    // Splash page is public - no authentication needed
+    // Return not authenticated to prevent frontend errors
+    return res.status(200).json({
+        authenticated: false,
+        message: 'Splash page is public - no authentication required'
+    });
+});
 router.post('/signup', async (req, res) => {
     const email = String(req.body.email).toLowerCase().trim();
     // Input validation
@@ -44,14 +87,12 @@ router.post('/signup', async (req, res) => {
         const existingUser = await User_1.default.findOne({ email }, { isApproved: 1, position: 1, userId: 1, email: 1, hasProAccess: 1 }).lean().exec();
         if (existingUser) {
             if (existingUser.isApproved) {
-                const queryParams = new URLSearchParams({
-                    earlyAccess: 'true',
-                    userId: existingUser.userId,
-                    email: existingUser.email
-                }).toString();
+                // Generate link with authentication token for seamless cross-domain auth
+                const assistantLink = generateAssistantLink(existingUser.userId, existingUser.email, true, // isApproved
+                existingUser.hasProAccess);
                 return res.status(200).json({
                     message: 'You have already signed up and are approved.',
-                    link: `https://assistant.videogamewingman.com?${queryParams}`,
+                    link: assistantLink,
                     userId: existingUser.userId,
                     email: existingUser.email,
                     isApproved: true,
