@@ -128,37 +128,314 @@ function getForumId(req: Request): string {
 }
 
 /**
+ * Helper function to convert timestamp to number (milliseconds since epoch)
+ */
+function getTimestampValue(post: any): number {
+  const timestamp = post.timestamp || post.createdAt || post.date;
+  if (!timestamp) return 0;
+  
+  // If it's already a Date object, get time value
+  if (timestamp instanceof Date) {
+    return timestamp.getTime();
+  }
+  
+  // If it's a number, assume it's already milliseconds
+  if (typeof timestamp === 'number') {
+    return timestamp;
+  }
+  
+  // If it's a string, try to parse it as ISO date
+  if (typeof timestamp === 'string') {
+    const parsed = new Date(timestamp);
+    return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+  }
+  
+  return 0;
+}
+
+/**
+ * Interface for posts with forum metadata
+ */
+interface PostWithForum {
+  post: any;
+  forumId: string;
+  gameTitle: string;
+  forumTitle: string;
+  category?: string;
+}
+
+/**
+ * Fetches all posts from all splash page forums
+ * @param db - Database connection
+ * @param gameTitle - Optional game title to filter by
+ * @returns Array of posts with forum metadata
+ */
+async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostWithForum[]> {
+  const forumsCollection = db.collection('forums');
+  const allPostsWithForum: PostWithForum[] = [];
+  
+  // Get all forum IDs from SPLASH_PAGE_FORUMS
+  const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
+  
+  // Build query - filter by forumId and optionally by gameTitle
+  const query: any = { forumId: { $in: forumIds } };
+  
+  // Fetch all forums
+  const forums = await forumsCollection.find(query, {
+    projection: {
+      _id: 0,
+      forumId: 1,
+      gameTitle: 1,
+      title: 1,
+      category: 1,
+      posts: 1,
+    }
+  }).toArray();
+  
+  // Process each forum
+  for (const forum of forums) {
+    // Apply game title filter if provided (case-insensitive, trimmed)
+    if (gameTitle) {
+      const forumGameTitle = (forum.gameTitle || '').trim();
+      const filterGameTitle = gameTitle.trim();
+      if (forumGameTitle.toLowerCase() !== filterGameTitle.toLowerCase()) {
+        continue;
+      }
+    }
+    
+    // Find matching splash forum config for title format
+    const splashForum = Object.values(SPLASH_PAGE_FORUMS).find(
+      f => f.forumId === forum.forumId
+    );
+    
+    const forumTitle = splashForum 
+      ? `${splashForum.gameTitle} - ${splashForum.title}`
+      : (forum.gameTitle && forum.title 
+        ? `${forum.gameTitle} - ${forum.title}` 
+        : forum.title || 'Untitled Forum');
+    
+    const posts = forum.posts || [];
+    
+    // Add each post with forum metadata
+    for (const post of posts) {
+      allPostsWithForum.push({
+        post,
+        forumId: forum.forumId,
+        gameTitle: forum.gameTitle || '',
+        forumTitle,
+        category: forum.category,
+      });
+    }
+  }
+  
+  return allPostsWithForum;
+}
+
+/**
+ * Transforms a post to the response format
+ */
+function transformPost(post: any, userId?: string): any {
+  // Extract likes from metadata.likes (primary) or count metadata.likedBy array (fallback)
+  let likes = 0;
+  if (post.metadata && post.metadata.likes !== undefined && post.metadata.likes !== null) {
+    // Primary: likes stored as number in metadata.likes
+    likes = typeof post.metadata.likes === 'number' ? post.metadata.likes : 0;
+  } else if (post.metadata && post.metadata.likedBy && Array.isArray(post.metadata.likedBy)) {
+    // Fallback: count the likedBy array length
+    likes = post.metadata.likedBy.length;
+  } else if (post.likes !== undefined && post.likes !== null) {
+    // Legacy fallback: check root-level likes
+    if (Array.isArray(post.likes)) {
+      likes = post.likes.length;
+    } else if (typeof post.likes === 'number') {
+      likes = post.likes;
+    }
+  } else if (post.likeCount !== undefined && post.likeCount !== null) {
+    likes = typeof post.likeCount === 'number' ? post.likeCount : 0;
+  }
+
+  // Check if user has liked this post (only if userId is provided)
+  let isLiked = false;
+  if (userId && post.metadata && post.metadata.likedBy && Array.isArray(post.metadata.likedBy)) {
+    isLiked = post.metadata.likedBy.includes(userId);
+  }
+  
+  // Extract attachments from metadata.attachments
+  const attachments = (post.metadata && post.metadata.attachments && Array.isArray(post.metadata.attachments))
+    ? post.metadata.attachments
+    : [];
+  
+  // Extract edited status and timestamp
+  const isEdited = post.metadata && post.metadata.edited === true;
+  const editedAt = post.metadata && post.metadata.editedAt 
+    ? post.metadata.editedAt 
+    : (post.metadata && post.metadata.lastEdited 
+      ? post.metadata.lastEdited 
+      : null);
+  
+  // Extract parentPostId (for replies)
+  const parentPostId = post.parentPostId 
+    ? (post.parentPostId instanceof ObjectId ? post.parentPostId.toString() : String(post.parentPostId))
+    : null;
+  
+  return {
+    postId: post._id?.toString() || null,
+    author: post.username || post.author || post.postedBy || post.createdBy || 'Anonymous',
+    content: post.message || post.content || post.text || '',
+    timestamp: post.timestamp || post.createdAt || post.date || new Date().toISOString(),
+    likes: likes,
+    isLiked: isLiked,
+    attachments: attachments,
+    edited: isEdited,
+    editedAt: editedAt,
+    parentPostId: parentPostId,
+    replies: [], // Will be populated by buildReplyTree
+  };
+}
+
+/**
+ * Validates that a parent post exists and returns its forum information
+ * @param db - Database connection
+ * @param parentPostId - The post ID to validate
+ * @returns Object with forumId and parent post, or null if not found
+ */
+async function validateParentPost(db: any, parentPostId: string): Promise<{ forumId: string; parentPost: any } | null> {
+  if (!ObjectId.isValid(parentPostId)) {
+    return null;
+  }
+
+  const forumsCollection = db.collection('forums');
+  
+  // Search all splash page forums for the parent post
+  const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
+  const forums = await forumsCollection.find(
+    { forumId: { $in: forumIds } },
+    { projection: { forumId: 1, posts: 1 } }
+  ).toArray();
+
+  // Search through all forums to find the parent post
+  for (const forum of forums) {
+    const posts = forum.posts || [];
+    const parentPost = posts.find((post: any) => {
+      const postId = post._id?.toString();
+      return postId === parentPostId;
+    });
+
+    if (parentPost) {
+      return {
+        forumId: forum.forumId,
+        parentPost: parentPost,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Builds a nested reply tree structure from flat post list
+ * Separates top-level posts from replies and nests replies under their parents
+ */
+function buildReplyTree(postsWithForum: PostWithForum[], userId?: string): any[] {
+  // Transform all posts to response format
+  const allPosts = postsWithForum.map(({ post, forumId, gameTitle, forumTitle, category }) => {
+    const transformed = transformPost(post, userId);
+    transformed.forumId = forumId;
+    transformed.gameTitle = gameTitle;
+    transformed.forumTitle = forumTitle;
+    if (category) {
+      transformed.category = category;
+    }
+    return transformed;
+  });
+  
+  // Separate top-level posts from replies
+  const topLevelPosts: any[] = [];
+  const repliesMap = new Map<string, any[]>(); // Map of parentPostId -> replies[]
+  
+  for (const post of allPosts) {
+    // Check if this is a reply (has parentPostId)
+    const parentId = post.parentPostId;
+    
+    if (parentId) {
+      // This is a reply - add to replies map
+      if (!repliesMap.has(parentId)) {
+        repliesMap.set(parentId, []);
+      }
+      repliesMap.get(parentId)!.push(post);
+    } else {
+      // This is a top-level post
+      topLevelPosts.push(post);
+    }
+  }
+  
+  // Sort replies by timestamp (newest first)
+  for (const [parentId, replies] of repliesMap.entries()) {
+    replies.sort((a, b) => {
+      const timeA = getTimestampValue({ timestamp: a.timestamp });
+      const timeB = getTimestampValue({ timestamp: b.timestamp });
+      return timeB - timeA; // Newest first
+    });
+  }
+  
+  // Attach replies to their parent posts
+  for (const post of topLevelPosts) {
+    const postId = post.postId;
+    if (postId && repliesMap.has(postId)) {
+      post.replies = repliesMap.get(postId)!;
+    } else {
+      post.replies = [];
+    }
+  }
+  
+  // Sort top-level posts by timestamp (newest first)
+  topLevelPosts.sort((a, b) => {
+    const timeA = getTimestampValue({ timestamp: a.timestamp });
+    const timeB = getTimestampValue({ timestamp: b.timestamp });
+    
+    // If timestamps are equal, use post ID as tiebreaker for stable sort
+    if (timeB === timeA) {
+      const idA = a.postId || '';
+      const idB = b.postId || '';
+      return idB.localeCompare(idA); // Descending order for IDs
+    }
+    
+    return timeB - timeA; // Descending order (newest first)
+  });
+  
+  return topLevelPosts;
+}
+
+/**
  * GET /api/public/forum-posts
- * Returns posts from a specific forum for preview on the splash page
+ * Returns posts from all forums in a unified feed for the splash page
  * Query params:
- *   - forumId: (optional) forum ID to view (defaults to Xenoblade Chronicles 3 forum)
- *   - limit: number of posts to return (default: 1, max: 1 - loads one at a time)
+ *   - gameTitle: (optional) Filter posts by game title (e.g., "Xenoblade Chronicles 3")
+ *   - limit: number of posts to return (default: 50, max: 100)
  *   - offset: number of posts to skip (default: 0) - for pagination
  *   - userId: (optional) user's userId to check if they've liked each post
  * 
  * Usage:
- *   - Initial load: GET /api/public/forum-posts?limit=1&offset=0 (loads 1st post from default forum)
- *   - With forum selection: GET /api/public/forum-posts?forumId=forum_xxx&limit=1&offset=0
- *   - With user context: GET /api/public/forum-posts?limit=1&offset=0&userId=user-xxx (includes isLiked field)
- *   - Load more: GET /api/public/forum-posts?limit=1&offset=1&userId=user-xxx (loads 2nd post)
- *   - etc.
+ *   - Initial load: GET /api/public/forum-posts?limit=50 (loads 50 posts from all games)
+ *   - With game filter: GET /api/public/forum-posts?gameTitle=Xenoblade%20Chronicles%203&limit=50
+ *   - With user context: GET /api/public/forum-posts?limit=50&userId=user-xxx (includes isLiked field)
+ *   - Load more: GET /api/public/forum-posts?limit=50&offset=50&userId=user-xxx
  */
 router.get('/public/forum-posts', cachePresets.forumPosts, addETag, async (req: Request, res: Response) => {
   try {
-    // Get forum ID from query params (with validation and default)
-    const forumId = getForumId(req);
-
     // Get userId from query params (optional)
     const userId = String(req.query.userId || '').trim();
 
+    // Get gameTitle filter (optional)
+    const gameTitle = String(req.query.gameTitle || '').trim() || undefined;
+
     // Parse and validate limit parameter
-    // Always load 1 post at a time for splash page preview
     const limitParam = req.query.limit;
-    let limit = 1; // default: show first post initially
+    let limit = 50; // default: show 50 posts initially
     if (limitParam) {
       const parsedLimit = parseInt(String(limitParam), 10);
       if (!isNaN(parsedLimit) && parsedLimit > 0) {
-        limit = Math.min(parsedLimit, 1); // cap at 1 - load one post at a time
+        limit = Math.min(parsedLimit, 100); // cap at 100
       }
     }
 
@@ -185,74 +462,12 @@ router.get('/public/forum-posts', cachePresets.forumPosts, addETag, async (req: 
       });
     }
 
-    // Query the specific forum from the main database
-    const forumsCollection = db.collection('forums');
-    
-    // Find the specific forum by forumId (allow private forums for splash page preview)
-    const forum = await forumsCollection.findOne(
-      { forumId: forumId },
-      {
-        projection: {
-          _id: 0,
-          forumId: 1,
-          gameTitle: 1,
-          title: 1,
-          category: 1,
-          posts: 1, // We need the posts array
-          createdAt: 1,
-          updatedAt: 1,
-          // Exclude sensitive fields
-        }
-      }
-    );
+    // Fetch all posts from all splash page forums
+    const allPostsWithForum = await getAllSplashPagePosts(db, gameTitle);
 
-    if (!forum) {
-      // Debug logging only in development mode
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Forum not found by forumId:', forumId);
-      }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Forum not found for preview',
-        ...(process.env.NODE_ENV === 'development' && {
-          debug: {
-            searchedForumId: forumId,
-          }
-        })
-      });
-    }
-
-    // Extract posts array from forum document
-    const allPosts = forum.posts || [];
-    
-    // Helper function to convert timestamp to number (milliseconds since epoch)
-    const getTimestampValue = (post: any): number => {
-      const timestamp = post.timestamp || post.createdAt || post.date;
-      if (!timestamp) return 0;
-      
-      // If it's already a Date object, get time value
-      if (timestamp instanceof Date) {
-        return timestamp.getTime();
-      }
-      
-      // If it's a number, assume it's already milliseconds
-      if (typeof timestamp === 'number') {
-        return timestamp;
-      }
-      
-      // If it's a string, try to parse it as ISO date
-      if (typeof timestamp === 'string') {
-        const parsed = new Date(timestamp);
-        return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
-      }
-      
-      return 0;
-    };
-    
     // Deduplicate posts by _id to prevent showing the same post multiple times
     const seenPostIds = new Set<string>();
-    const uniquePosts = allPosts.filter((post: any) => {
+    const uniquePostsWithForum = allPostsWithForum.filter(({ post }) => {
       const postId = post._id?.toString();
       if (!postId) return true; // Keep posts without IDs (shouldn't happen, but be safe)
       if (seenPostIds.has(postId)) {
@@ -261,106 +476,28 @@ router.get('/public/forum-posts', cachePresets.forumPosts, addETag, async (req: 
       seenPostIds.add(postId);
       return true;
     });
-    
-    // Sort posts by timestamp (if available) or keep original order
-    // Posts should be sorted chronologically (newest first) so new posts from splash page appear at the top
-    const sortedPosts = [...uniquePosts].sort((a: any, b: any) => {
-      const timeA = getTimestampValue(a);
-      const timeB = getTimestampValue(b);
-      
-      // If timestamps are equal, use post ID as tiebreaker for stable sort
-      if (timeB === timeA) {
-        const idA = a._id?.toString() || '';
-        const idB = b._id?.toString() || '';
-        return idB.localeCompare(idA); // Descending order for IDs
-      }
-      
-      return timeB - timeA; // Descending order (newest first)
-    });
+
+    // Build reply tree structure (nested replies under posts)
+    const postsWithReplies = buildReplyTree(uniquePostsWithForum, userId || undefined);
 
     // Apply pagination: slice posts array based on offset and limit
-    const paginatedPosts = sortedPosts.slice(offset, offset + limit);
+    const paginatedPosts = postsWithReplies.slice(offset, offset + limit);
 
-    // Transform posts to ensure consistent response format
-    const previewPosts = paginatedPosts.map((post: any) => {
-      // Extract likes from metadata.likes (primary) or count metadata.likedBy array (fallback)
-      let likes = 0;
-      if (post.metadata && post.metadata.likes !== undefined && post.metadata.likes !== null) {
-        // Primary: likes stored as number in metadata.likes
-        likes = typeof post.metadata.likes === 'number' ? post.metadata.likes : 0;
-      } else if (post.metadata && post.metadata.likedBy && Array.isArray(post.metadata.likedBy)) {
-        // Fallback: count the likedBy array length
-        likes = post.metadata.likedBy.length;
-      } else if (post.likes !== undefined && post.likes !== null) {
-        // Legacy fallback: check root-level likes
-        if (Array.isArray(post.likes)) {
-          likes = post.likes.length;
-        } else if (typeof post.likes === 'number') {
-          likes = post.likes;
-        }
-      } else if (post.likeCount !== undefined && post.likeCount !== null) {
-        likes = typeof post.likeCount === 'number' ? post.likeCount : 0;
-      }
+    // Get list of available games for filter
+    const availableGames = Array.from(
+      new Set(
+        Object.values(SPLASH_PAGE_FORUMS).map(f => f.gameTitle)
+      )
+    ).sort();
 
-      // Check if user has liked this post (only if userId is provided)
-      let isLiked = false;
-      if (userId && post.metadata && post.metadata.likedBy && Array.isArray(post.metadata.likedBy)) {
-        isLiked = post.metadata.likedBy.includes(userId);
-      }
-      
-      // Extract attachments from metadata.attachments
-      const attachments = (post.metadata && post.metadata.attachments && Array.isArray(post.metadata.attachments))
-        ? post.metadata.attachments
-        : [];
-      
-      // Extract edited status and timestamp
-      const isEdited = post.metadata && post.metadata.edited === true;
-      const editedAt = post.metadata && post.metadata.editedAt 
-        ? post.metadata.editedAt 
-        : (post.metadata && post.metadata.lastEdited 
-          ? post.metadata.lastEdited 
-          : null);
-      
-      return {
-        postId: post._id?.toString() || null,
-        author: post.username || post.author || post.postedBy || post.createdBy || 'Anonymous',
-        content: post.message || post.content || post.text || '',
-        timestamp: post.timestamp || post.createdAt || post.date || new Date().toISOString(),
-        likes: likes,
-        isLiked: isLiked, // Add this field
-        attachments: attachments, // Include image attachments
-        edited: isEdited, // Whether the post has been edited
-        editedAt: editedAt, // Timestamp when the post was last edited (null if never edited)
-      };
-    });
-
-    // Find the matching forum in SPLASH_PAGE_FORUMS to get the correct title format
-    const splashForum = Object.values(SPLASH_PAGE_FORUMS).find(
-      f => f.forumId === forum.forumId
-    );
-    
-    // Use the correct format: "Game Title - Forum Title" (no redundancy)
-    // For splash page forums, override the title to use the correct format
-    const displayTitle = splashForum 
-      ? `${splashForum.gameTitle} - ${splashForum.title}`
-      : (forum.gameTitle && forum.title 
-        ? `${forum.gameTitle} - ${forum.title}` 
-        : forum.title || 'Untitled Forum');
-
-    // Return forum metadata along with posts
+    // Return unified feed with nested replies
     return res.status(200).json({
       success: true,
-      forum: {
-        forumId: forum.forumId,
-        title: splashForum ? displayTitle : (forum.title || 'Untitled Forum'), // Use correct format for splash page forums
-        gameTitle: forum.gameTitle || null,
-        displayTitle: displayTitle, // Format: "Game Title - Forum Title" (no redundancy)
-        category: forum.category || null,
-        totalPosts: allPosts.length,
-      },
-      posts: previewPosts,
-      count: previewPosts.length,
-      hasMore: offset + limit < allPosts.length, // Indicates if more posts are available
+      posts: paginatedPosts,
+      count: paginatedPosts.length,
+      totalPosts: postsWithReplies.length,
+      hasMore: offset + limit < postsWithReplies.length,
+      availableGames: availableGames,
     });
   } catch (error) {
     console.error('Error fetching forum posts for preview:', error);
@@ -406,6 +543,82 @@ router.get('/public/forum-posts/available-forums', cachePresets.staticContent, a
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch available forums',
+    });
+  }
+});
+
+/**
+ * GET /api/public/forum-posts/available-games
+ * Returns list of available games with post counts for filtering
+ * Response includes:
+ *   - gameTitle: Name of the game
+ *   - forumCount: Number of forums for this game
+ *   - postCount: Total number of top-level posts across all forums for this game
+ */
+router.get('/public/forum-posts/available-games', cachePresets.staticContent, addETag, async (req: Request, res: Response) => {
+  try {
+    // Connect to database
+    let db;
+    try {
+      db = await getWingmanDatabase();
+    } catch (dbError) {
+      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+      console.error('Database error in available-games:', errorMessage);
+      return res.status(500).json({
+        success: false,
+        message: errorMessage,
+      });
+    }
+
+    // Get all forum IDs from SPLASH_PAGE_FORUMS
+    const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
+    const forumsCollection = db.collection('forums');
+
+    // Fetch all forums
+    const forums = await forumsCollection.find(
+      { forumId: { $in: forumIds } },
+      { projection: { forumId: 1, gameTitle: 1, posts: 1 } }
+    ).toArray();
+
+    // Group forums by gameTitle and count posts
+    const gameMap = new Map<string, { gameTitle: string; forumCount: number; postCount: number }>();
+
+    for (const forum of forums) {
+      const gameTitle = forum.gameTitle || '';
+      const posts = forum.posts || [];
+      
+      // Count only top-level posts (posts without parentPostId)
+      const topLevelPosts = posts.filter((post: any) => {
+        return !post.parentPostId || post.parentPostId === null;
+      });
+
+      if (gameMap.has(gameTitle)) {
+        const existing = gameMap.get(gameTitle)!;
+        existing.forumCount += 1;
+        existing.postCount += topLevelPosts.length;
+      } else {
+        gameMap.set(gameTitle, {
+          gameTitle: gameTitle,
+          forumCount: 1,
+          postCount: topLevelPosts.length,
+        });
+      }
+    }
+
+    // Convert map to array and sort by gameTitle
+    const games = Array.from(gameMap.values()).sort((a, b) => {
+      return a.gameTitle.localeCompare(b.gameTitle);
+    });
+
+    return res.status(200).json({
+      success: true,
+      games: games,
+    });
+  } catch (error) {
+    console.error('Error fetching available games:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch available games',
     });
   }
 });
@@ -581,24 +794,26 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
 
 /**
  * POST /api/public/forum-posts
- * Creates a new post in the forum
+ * Creates a new post in the forum (top-level post or reply)
  * Body:
  *   - forumId: (optional) forum ID to post to (defaults to Xenoblade Chronicles 3 forum)
+ *              Not required if parentPostId is provided (will be inferred from parent)
  *   - userId: user's userId
  *   - content: post content/message
+ *   - parentPostId: (optional) If provided, creates a reply to this post instead of a top-level post
  *   - attachments: array of image attachment objects (optional)
  *     Each attachment should have: { url, name, size, type }
  */
 router.post('/public/forum-posts', async (req: Request, res: Response) => {
   try {
-    // Get forum ID from body (with validation and default)
-    const forumId = getForumId(req);
-    const { userId, content, attachments } = req.body;
+    const { userId, content, attachments, parentPostId } = req.body;
 
-    if (!userId || typeof userId !== 'string') {
-      return res.status(400).json({
+    // Check authentication - return 401 if userId is missing or invalid
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      return res.status(401).json({
         success: false,
-        message: 'userId is required',
+        message: 'Please sign up to post a comment',
+        requiresAuth: true,
       });
     }
 
@@ -666,12 +881,13 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
       });
     }
 
-    // Verify user exists
-    const user = await User.findOne({ userId }).lean().exec() as any;
+    // Verify user exists - return 401 if user not found (authentication required)
+    const user = await User.findOne({ userId: userId.trim() }).lean().exec() as any;
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
-        message: 'User not found',
+        message: 'Please sign up to post a comment',
+        requiresAuth: true,
       });
     }
 
@@ -688,6 +904,33 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
       });
     }
 
+    let forumId: string;
+    let isReply = false;
+
+    // If parentPostId is provided, validate parent post and get forumId from it
+    if (parentPostId) {
+      if (typeof parentPostId !== 'string' || !parentPostId.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid parentPostId',
+        });
+      }
+
+      const parentValidation = await validateParentPost(db, parentPostId.trim());
+      if (!parentValidation) {
+        return res.status(404).json({
+          success: false,
+          message: 'Parent post not found',
+        });
+      }
+
+      forumId = parentValidation.forumId;
+      isReply = true;
+    } else {
+      // Get forum ID from body (with validation and default) for top-level posts
+      forumId = getForumId(req);
+    }
+
     const forumsCollection = db.collection('forums');
     const forum = await forumsCollection.findOne({ forumId: forumId });
 
@@ -698,20 +941,23 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
       });
     }
 
-    // Check if user already has a post
     const posts = forum.posts || [];
-    const existingPost = posts.find((post: any) => post.createdBy === userId);
 
-    if (existingPost) {
-      return res.status(400).json({
-        success: false,
-        message: 'You already have a post. Please edit or delete it first.',
-        postId: existingPost._id?.toString(),
-      });
+    // For top-level posts, check if user already has a post (one post per user per forum)
+    // For replies, allow unlimited replies per user
+    if (!isReply) {
+      const existingPost = posts.find((post: any) => post.createdBy === userId);
+      if (existingPost) {
+        return res.status(400).json({
+          success: false,
+          message: 'You already have a post. Please edit or delete it first.',
+          postId: existingPost._id?.toString(),
+        });
+      }
     }
 
     // Create new post object
-    const newPost = {
+    const newPost: any = {
       _id: new ObjectId(),
       username: user.email, // Use email as username for splash page users
       message: content.trim(),
@@ -725,6 +971,11 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
         status: 'active',
       },
     };
+
+    // Add parentPostId if this is a reply
+    if (isReply && parentPostId) {
+      newPost.parentPostId = new ObjectId(String(parentPostId.trim()));
+    }
 
     // Add post to forum's posts array
     const result = await forumsCollection.updateOne(
@@ -748,8 +999,9 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Post created successfully',
+      message: isReply ? 'Reply created successfully' : 'Post created successfully',
       postId: newPost._id.toString(),
+      parentPostId: isReply ? parentPostId : null,
       post: {
         author: user.email,
         content: newPost.message,
@@ -763,6 +1015,204 @@ router.post('/public/forum-posts', async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to create post',
+    });
+  }
+});
+
+/**
+ * POST /api/public/forum-posts/:postId/reply
+ * Creates a reply to an existing post
+ * Params:
+ *   - postId: MongoDB ObjectId of the parent post to reply to
+ * Body:
+ *   - userId: user's userId
+ *   - content: reply content/message
+ *   - attachments: array of image attachment objects (optional)
+ *     Each attachment should have: { url, name, size, type }
+ */
+router.post('/public/forum-posts/:postId/reply', async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const { userId, content, attachments } = req.body;
+
+    // Check authentication - return 401 if userId is missing or invalid
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please sign up to post a comment',
+        requiresAuth: true,
+      });
+    }
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reply content is required',
+      });
+    }
+
+    if (!ObjectId.isValid(postId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid post ID',
+      });
+    }
+
+    // Validate attachments if provided
+    let validatedAttachments: any[] = [];
+    if (attachments) {
+      if (!Array.isArray(attachments)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Attachments must be an array',
+        });
+      }
+
+      // Splash page users can only have 1 image
+      if (attachments.length > 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Splash page users can only upload 1 image per reply',
+        });
+      }
+
+      // Validate each attachment
+      for (const attachment of attachments) {
+        if (!attachment.url || typeof attachment.url !== 'string') {
+          return res.status(400).json({
+            success: false,
+            message: 'Each attachment must have a valid URL',
+          });
+        }
+
+        // Basic URL validation
+        try {
+          new URL(attachment.url);
+        } catch {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid attachment URL format',
+          });
+        }
+
+        validatedAttachments.push({
+          url: attachment.url,
+          name: attachment.name || 'image',
+          size: attachment.size || 0,
+          type: attachment.type || 'image/jpeg',
+        });
+      }
+    }
+
+    // Check content moderation
+    const moderationResult = await checkContentModeration(content);
+    if (!moderationResult.isSafe) {
+      return res.status(400).json({
+        success: false,
+        message: moderationResult.message || 'Your reply contains inappropriate content. Please remove any offensive words or phrases and try again.',
+        detectedWords: moderationResult.detectedWords,
+        moderationWarning: true,
+      });
+    }
+
+    // Verify user exists - return 401 if user not found (authentication required)
+    const user = await User.findOne({ userId: userId.trim() }).lean().exec() as any;
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please sign up to post a comment',
+        requiresAuth: true,
+      });
+    }
+
+    // Connect to main application database
+    let db;
+    try {
+      db = await getWingmanDatabase();
+    } catch (dbError) {
+      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+      console.error('Database error:', errorMessage);
+      return res.status(500).json({
+        success: false,
+        message: errorMessage,
+      });
+    }
+
+    // Validate parent post exists and get forumId
+    const parentValidation = await validateParentPost(db, postId);
+    if (!parentValidation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parent post not found',
+      });
+    }
+
+    const forumId = parentValidation.forumId;
+    const forumsCollection = db.collection('forums');
+    const forum = await forumsCollection.findOne({ forumId: forumId });
+
+    if (!forum) {
+      return res.status(404).json({
+        success: false,
+        message: 'Forum not found',
+      });
+    }
+
+    // Create new reply object
+    const newReply = {
+      _id: new ObjectId(),
+      username: user.email, // Use email as username for splash page users
+      message: content.trim(),
+      timestamp: new Date(),
+      createdBy: userId,
+      parentPostId: new ObjectId(String(postId)), // Set parent post ID
+      metadata: {
+        edited: false,
+        likes: 0,
+        likedBy: [],
+        attachments: validatedAttachments, // Store validated attachments
+        status: 'active',
+      },
+    };
+
+    // Add reply to forum's posts array
+    const result = await forumsCollection.updateOne(
+      { forumId: forumId },
+      {
+        $push: { posts: newReply as any },
+        $set: {
+          'metadata.totalPosts': (forum.posts || []).length + 1,
+          'metadata.lastActivityAt': new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to create reply',
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Reply created successfully',
+      postId: newReply._id.toString(),
+      parentPostId: postId,
+      reply: {
+        author: user.email,
+        content: newReply.message,
+        timestamp: newReply.timestamp,
+        likes: 0,
+        attachments: validatedAttachments,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating reply:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to create reply',
     });
   }
 });
@@ -948,7 +1398,7 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
     const result = await forumsCollection.updateOne(
       { 
         forumId: forumId,
-        'posts._id': new ObjectId(postId)
+        'posts._id': new ObjectId(String(postId))
       },
       {
         $set: updateFields,
@@ -1045,7 +1495,7 @@ router.delete('/public/forum-posts/:postId', async (req: Request, res: Response)
     const result = await forumsCollection.updateOne(
       { forumId: forumId },
       {
-        $pull: { posts: { _id: new ObjectId(postId) } } as any,
+        $pull: { posts: { _id: new ObjectId(String(postId)) } } as any,
         $set: {
           'metadata.totalPosts': Math.max(0, posts.length - 1),
           updatedAt: new Date(),
