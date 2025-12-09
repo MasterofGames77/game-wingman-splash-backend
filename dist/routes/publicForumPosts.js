@@ -25,9 +25,39 @@ const SPLASH_PAGE_FORUMS = {
     },
     apexlegends: {
         forumId: "forum_1763236973075_bxzzix94i",
-        title: "Apex Legends",
+        title: "General Discussion",
         gameTitle: "Apex Legends",
     },
+    celeste: {
+        forumId: "forum_1763160209962_x5ytzwz3a",
+        title: "Gameplay",
+        gameTitle: "Celeste",
+    },
+    JakandDaxter: {
+        forumId: "forum_1763236935768_ih7j3ioea",
+        title: "General Discussion",
+        gameTitle: "Jak and Daxter: The Precursor Legacy",
+    },
+    thelastofus: {
+        forumId: "forum_1765151756260_f3rhf8xjs",
+        title: "Gameplay",
+        gameTitle: "The Last of Us",
+    },
+    candycrush: {
+        forumId: "forum_1765150805927_hbtm3cuz6",
+        title: "General Discussion",
+        gameTitle: "Candy Crush Saga",
+    },
+    twopointmuseum: {
+        forumId: "forum_1765218600020_esp7qcn89",
+        title: "General Discussion",
+        gameTitle: "Two Point Museum",
+    },
+    persona5royal: {
+        forumId: "forum_1765151949973_n6p0x4jtl",
+        title: "Help & Support",
+        gameTitle: "Persona 5 Royal",
+    }
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
 const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade.forumId;
@@ -272,13 +302,23 @@ router.get('/public/forum-posts', cacheHeaders_1.cachePresets.forumPosts, cacheH
                 editedAt: editedAt, // Timestamp when the post was last edited (null if never edited)
             };
         });
+        // Find the matching forum in SPLASH_PAGE_FORUMS to get the correct title format
+        const splashForum = Object.values(SPLASH_PAGE_FORUMS).find(f => f.forumId === forum.forumId);
+        // Use the correct format: "Game Title - Forum Title" (no redundancy)
+        // For splash page forums, override the title to use the correct format
+        const displayTitle = splashForum
+            ? `${splashForum.gameTitle} - ${splashForum.title}`
+            : (forum.gameTitle && forum.title
+                ? `${forum.gameTitle} - ${forum.title}`
+                : forum.title || 'Untitled Forum');
         // Return forum metadata along with posts
         return res.status(200).json({
             success: true,
             forum: {
                 forumId: forum.forumId,
-                title: forum.title || 'Untitled Forum',
+                title: splashForum ? displayTitle : (forum.title || 'Untitled Forum'), // Use correct format for splash page forums
                 gameTitle: forum.gameTitle || null,
+                displayTitle: displayTitle, // Format: "Game Title - Forum Title" (no redundancy)
                 category: forum.category || null,
                 totalPosts: allPosts.length,
             },
@@ -309,11 +349,15 @@ router.get('/public/forum-posts', cacheHeaders_1.cachePresets.forumPosts, cacheH
  */
 router.get('/public/forum-posts/available-forums', cacheHeaders_1.cachePresets.staticContent, cacheHeaders_1.addETag, async (req, res) => {
     try {
-        const forums = Object.values(SPLASH_PAGE_FORUMS).map(forum => ({
-            forumId: forum.forumId,
-            title: forum.title,
-            gameTitle: forum.gameTitle,
-        }));
+        const forums = Object.values(SPLASH_PAGE_FORUMS).map(forum => {
+            const displayTitle = `${forum.gameTitle} - ${forum.title}`; // Format: "Game Title - Forum Title"
+            return {
+                forumId: forum.forumId,
+                title: displayTitle, // Use displayTitle format for title field to ensure frontend gets correct format
+                gameTitle: forum.gameTitle,
+                displayTitle: displayTitle, // Also provide as separate field for explicit use
+            };
+        });
         return res.status(200).json({
             success: true,
             forums: forums,
