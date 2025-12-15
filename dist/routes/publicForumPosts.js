@@ -57,6 +57,41 @@ const SPLASH_PAGE_FORUMS = {
         forumId: "forum_1765151949973_n6p0x4jtl",
         title: "Help & Support",
         gameTitle: "Persona 5 Royal",
+    },
+    supermario64: {
+        forumId: "forum_1748480234269_p7s8uq6wy",
+        title: "Speedruns",
+        gameTitle: "Super Mario 64",
+    },
+    populationone: {
+        forumId: "forum_1765116000030_1b7qw0ezu",
+        title: "Mods",
+        gameTitle: "Population: ONE",
+    },
+    cyberpunk2077: {
+        forumId: "forum_1765226700037_obd4h66av",
+        title: "General Discussion",
+        gameTitle: "Cyberpunk 2077",
+    },
+    guiltygearstrive: {
+        forumId: "forum_1765371600044_lyloigfr7",
+        title: "Speedruns",
+        gameTitle: "Guilty Gear Strive",
+    },
+    portal2: {
+        forumId: "forum_1765305000024_to7wisorn",
+        title: "General Discussion",
+        gameTitle: "Portal 2"
+    },
+    storyofseasons: {
+        forumId: "forum_1765303200021_nncbl3kw2",
+        title: "General Discussion",
+        gameTitle: "Story of Seasons",
+    },
+    fzerogx: {
+        forumId: "forum_1765303202811_k6sdc8fsb",
+        title: "Gameplay",
+        gameTitle: "F-Zero GX",
     }
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
@@ -77,10 +112,18 @@ async function getWingmanDatabase() {
         console.error('Database connection error:', dbError);
         throw new Error(`Failed to connect to database: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`);
     }
-    // Check if connection is ready
-    if (!wingmanDB || wingmanDB.readyState !== 1) {
-        console.error('Database connection not ready. State:', wingmanDB?.readyState);
-        throw new Error('Database connection not ready');
+    // Check if connection is usable
+    // Mongoose readyState values:
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    if (!wingmanDB) {
+        console.error('Database connection object is not available');
+        throw new Error('Database connection not available');
+    }
+    // Treat fully disconnected connections as an error, but allow "connecting" (2)
+    // since the Mongo driver will queue operations until ready.
+    if (wingmanDB.readyState === 0) {
+        console.error('Database connection is disconnected. State:', wingmanDB.readyState);
+        throw new Error('Database connection is disconnected');
     }
     // Access database - mongoose.Connection has .db property
     const db = wingmanDB.db || wingmanDB;
