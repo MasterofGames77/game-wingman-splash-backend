@@ -92,6 +92,26 @@ const SPLASH_PAGE_FORUMS = {
         forumId: "forum_1765303202811_k6sdc8fsb",
         title: "Gameplay",
         gameTitle: "F-Zero GX",
+    },
+    uncharted2: {
+        forumId: "forum_1765371603574_xct3a4f68",
+        title: "General Discussion",
+        gameTitle: "Uncharted 2: Among Thieves",
+    },
+    supermeatboy: {
+        forumId: "forum_1765375200076_7k37mavqq",
+        title: "Speedruns",
+        gameTitle: "Super Meat Boy",
+    },
+    destiny2: {
+        forumId: "forum_1765389600024_y0bkmus9y",
+        title: "Gameplay",
+        gameTitle: "Destiny 2",
+    },
+    raymanlegends: {
+        forumId: "forum_1765461600041_qmz75l03o",
+        title: "Gameplay",
+        gameTitle: "Rayman Legends",
     }
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
