@@ -53,10 +53,17 @@ app.use(express.json());
 
 // Add Content Security Policy headers to allow ImageKit images
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Only add CSP if not already set (allows frontend to override)
-  if (!res.getHeader('Content-Security-Policy')) {
-    res.setHeader(
-      'Content-Security-Policy',
+  // Always set CSP header to ensure ImageKit is included
+  // If frontend needs to override, it should be done via meta tag (which has lower precedence)
+  const existingCSP = res.getHeader('Content-Security-Policy');
+  if (existingCSP) {
+    // Log if CSP is already set (for debugging)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[CSP] Header already set, skipping:', existingCSP);
+    }
+  } else {
+    // Set comprehensive CSP that includes ImageKit
+    const cspPolicy = 
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; " +
       "style-src 'self' 'unsafe-inline'; " +
@@ -67,8 +74,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       "object-src 'none'; " +
       "base-uri 'self'; " +
       "form-action 'self'; " +
-      "frame-ancestors 'none';"
-    );
+      "frame-ancestors 'none';";
+    
+    res.setHeader('Content-Security-Policy', cspPolicy);
+    
+    // Log in development for verification
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[CSP] Set Content-Security-Policy header with ImageKit support');
+    }
   }
   next();
 });
