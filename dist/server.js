@@ -48,38 +48,34 @@ const corsOptions = {
 };
 app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
-// Add Content Security Policy headers to allow ImageKit images
-app.use((req, res, next) => {
-    // Always set CSP header to ensure ImageKit is included
-    // If frontend needs to override, it should be done via meta tag (which has lower precedence)
-    const existingCSP = res.getHeader('Content-Security-Policy');
-    if (existingCSP) {
-        // Log if CSP is already set (for debugging)
-        if (process.env.NODE_ENV === 'development') {
-            console.log('[CSP] Header already set, skipping:', existingCSP);
-        }
-    }
-    else {
-        // Set comprehensive CSP that includes ImageKit
-        const cspPolicy = "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data: https: blob:; " +
-            "font-src 'self' data:; " +
-            "connect-src 'self' https://api.openai.com https://*.openai.com https://api.igdb.com https://api.rawg.io https://api.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://cloudflareinsights.com https://*.cloudflareinsights.com https://*.herokuapp.com https://ik.imagekit.io https://*.imagekit.io wss: ws:; " +
-            "frame-src 'self' https://checkout.stripe.com; " +
-            "object-src 'none'; " +
-            "base-uri 'self'; " +
-            "form-action 'self'; " +
-            "frame-ancestors 'none';";
-        res.setHeader('Content-Security-Policy', cspPolicy);
-        // Log in development for verification
-        if (process.env.NODE_ENV === 'development') {
-            console.log('[CSP] Set Content-Security-Policy header with ImageKit support');
-        }
-    }
-    next();
+// NOTE: CSP headers are handled by Cloudflare Transform Rules
+// Backend CSP removed to avoid conflicts - Cloudflare is the single source of truth
+// If Cloudflare is not active, backend can set CSP as fallback (see commented code below)
+// 
+// To re-enable backend CSP (not recommended when using Cloudflare):
+// Uncomment the middleware below and ensure it matches Cloudflare CSP exactly
+/*
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Only set CSP if Cloudflare hasn't already set it
+  const existingCSP = res.getHeader('Content-Security-Policy');
+  if (!existingCSP) {
+    const cspPolicy =
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https: blob:; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' https://api.openai.com https://*.openai.com https://api.igdb.com https://api.rawg.io https://api.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://cloudflareinsights.com https://*.cloudflareinsights.com https://*.herokuapp.com https://ik.imagekit.io https://*.imagekit.io wss: ws:; " +
+      "frame-src 'self' https://checkout.stripe.com; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self'; " +
+      "frame-ancestors 'none';";
+    res.setHeader('Content-Security-Policy', cspPolicy);
+  }
+  next();
 });
+*/
 // Routes logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {
     app.use((req, res, next) => {

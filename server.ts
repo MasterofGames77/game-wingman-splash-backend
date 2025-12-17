@@ -51,21 +51,20 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Add Content Security Policy headers to allow ImageKit images
+// NOTE: CSP headers are handled by Cloudflare Transform Rules
+// Backend CSP removed to avoid conflicts - Cloudflare is the single source of truth
+// If Cloudflare is not active, backend can set CSP as fallback (see commented code below)
+// 
+// To re-enable backend CSP (not recommended when using Cloudflare):
+// Uncomment the middleware below and ensure it matches Cloudflare CSP exactly
+/*
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Always set CSP header to ensure ImageKit is included
-  // If frontend needs to override, it should be done via meta tag (which has lower precedence)
+  // Only set CSP if Cloudflare hasn't already set it
   const existingCSP = res.getHeader('Content-Security-Policy');
-  if (existingCSP) {
-    // Log if CSP is already set (for debugging)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[CSP] Header already set, skipping:', existingCSP);
-    }
-  } else {
-    // Set comprehensive CSP that includes ImageKit
+  if (!existingCSP) {
     const cspPolicy = 
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com; " +
       "style-src 'self' 'unsafe-inline'; " +
       "img-src 'self' data: https: blob:; " +
       "font-src 'self' data:; " +
@@ -75,16 +74,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       "base-uri 'self'; " +
       "form-action 'self'; " +
       "frame-ancestors 'none';";
-    
     res.setHeader('Content-Security-Policy', cspPolicy);
-    
-    // Log in development for verification
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[CSP] Set Content-Security-Policy header with ImageKit support');
-    }
   }
   next();
 });
+*/
 
 // Routes logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {

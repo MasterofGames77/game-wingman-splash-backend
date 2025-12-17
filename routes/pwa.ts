@@ -172,10 +172,10 @@ router.get('/service-worker.js', (req: Request, res: Response) => {
   // Frontend will provide the actual service worker implementation
   const serviceWorker = `
 // Service Worker for Video Game Wingman PWA
-// Version: 1.0.0
-const CACHE_NAME = 'wingman-v1';
-const STATIC_CACHE_NAME = 'wingman-static-v1';
-const DYNAMIC_CACHE_NAME = 'wingman-dynamic-v1';
+// Version: 2.0.0 - Updated with ImageKit support
+const CACHE_NAME = 'wingman-v2';
+const STATIC_CACHE_NAME = 'wingman-static-v2';
+const DYNAMIC_CACHE_NAME = 'wingman-dynamic-v2';
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
