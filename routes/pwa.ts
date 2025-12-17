@@ -216,7 +216,37 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip cross-origin requests
+  // Handle ImageKit images (cross-origin image requests)
+  if (request.destination === 'image' && url.hostname.includes('imagekit.io')) {
+    // For ImageKit images, use network-first strategy with cache fallback
+    event.respondWith(
+      fetch(request, { mode: 'cors' }).then((fetchResponse) => {
+        if (fetchResponse.ok) {
+          const responseClone = fetchResponse.clone();
+          caches.open(STATIC_CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
+        return fetchResponse;
+      }).catch((error) => {
+        console.error('[Service Worker] Image fetch failed:', request.url, error);
+        // Try to return cached version if available
+        return caches.match(request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Return a placeholder or error response
+          return new Response('Image unavailable', { 
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  // Skip other cross-origin requests
   if (url.origin !== location.origin) {
     return;
   }

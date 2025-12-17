@@ -51,6 +51,43 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Add Content Security Policy headers to allow ImageKit images
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Only add CSP if not already set (allows frontend to override)
+  if (!res.getHeader('Content-Security-Policy')) {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https: blob:; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' https://api.openai.com https://*.openai.com https://api.igdb.com https://api.rawg.io https://api.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://cloudflareinsights.com https://*.cloudflareinsights.com https://*.herokuapp.com https://ik.imagekit.io https://*.imagekit.io wss: ws:; " +
+      "frame-src 'self' https://checkout.stripe.com; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self'; " +
+      "frame-ancestors 'none';"
+    );
+  }
+  next();
+});
+
+// Routes logging middleware (development only)
+if (process.env.NODE_ENV === 'development') {
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
+    if (req.method === 'PUT' || req.method === 'POST') {
+      console.log('Request body keys:', Object.keys(req.body || {}));
+    }
+    next();
+  });
+}
+
+// PWA routes - register BEFORE static files to handle /manifest.json and /service-worker.js
+// This ensures route handlers take precedence over static file serving
+app.use('/', pwaRoutes);
+
 // Serve static files from public directory with proper cache headers
 app.use(express.static('public', {
   maxAge: '1y', // Cache static assets for 1 year
@@ -97,17 +134,6 @@ if (process.env.MONGO_URI) {
   console.warn('MONGO_URI environment variable is not set. Database connections may fail.');
 }
 
-// Routes logging middleware (development only)
-if (process.env.NODE_ENV === 'development') {
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
-    if (req.method === 'PUT' || req.method === 'POST') {
-      console.log('Request body keys:', Object.keys(req.body || {}));
-    }
-    next();
-  });
-}
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', waitlistRoutes);
@@ -117,8 +143,6 @@ app.use('/api', approveUserRoute);
 app.use('/api', uploadForumImageRoute);
 app.use('/api', publicForumPostsRoute);
 app.use('/api', linkedinPostsRoute);
-// PWA routes - register before static files to handle /manifest.json and /service-worker.js
-app.use('/', pwaRoutes);
 // app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
 
 // Debug: Log registered routes (development only)

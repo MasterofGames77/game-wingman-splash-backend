@@ -221,20 +221,38 @@ async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostW
   // Get all forum IDs from SPLASH_PAGE_FORUMS
   const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
   
+  if (!forumIds || forumIds.length === 0) {
+    console.warn('No forum IDs found in SPLASH_PAGE_FORUMS');
+    return [];
+  }
+  
   // Build query - filter by forumId and optionally by gameTitle
   const query: any = { forumId: { $in: forumIds } };
   
   // Fetch all forums
-  const forums = await forumsCollection.find(query, {
-    projection: {
-      _id: 0,
-      forumId: 1,
-      gameTitle: 1,
-      title: 1,
-      category: 1,
-      posts: 1,
-    }
-  }).toArray();
+  let forums;
+  try {
+    forums = await forumsCollection.find(query, {
+      projection: {
+        _id: 0,
+        forumId: 1,
+        gameTitle: 1,
+        title: 1,
+        category: 1,
+        posts: 1,
+      }
+    }).toArray();
+  } catch (queryError) {
+    const errorMessage = queryError instanceof Error ? queryError.message : 'Unknown error';
+    console.error('Database query error in getAllSplashPagePosts:', errorMessage);
+    console.error('Query:', JSON.stringify(query, null, 2));
+    throw new Error(`Database query failed: ${errorMessage}`);
+  }
+  
+  if (!forums || forums.length === 0) {
+    console.warn('No forums found matching query:', JSON.stringify(query, null, 2));
+    return [];
+  }
   
   // Process each forum
   for (const forum of forums) {
@@ -507,7 +525,19 @@ router.get('/public/forum-posts', cachePresets.forumPosts, addETag, async (req: 
     }
 
     // Fetch all posts from all splash page forums
-    const allPostsWithForum = await getAllSplashPagePosts(db, gameTitle);
+    let allPostsWithForum: PostWithForum[];
+    try {
+      allPostsWithForum = await getAllSplashPagePosts(db, gameTitle);
+    } catch (fetchError) {
+      const errorMessage = fetchError instanceof Error ? fetchError.message : 'Unknown error';
+      console.error('Error fetching posts from forums:', errorMessage);
+      console.error('Error stack:', fetchError instanceof Error ? fetchError.stack : 'No stack trace');
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch posts from forums',
+        error: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+      });
+    }
 
     // Deduplicate posts by _id to prevent showing the same post multiple times
     const seenPostIds = new Set<string>();
