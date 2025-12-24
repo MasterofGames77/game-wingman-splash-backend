@@ -112,6 +112,156 @@ const SPLASH_PAGE_FORUMS = {
         forumId: "forum_1765461600041_qmz75l03o",
         title: "Gameplay",
         gameTitle: "Rayman Legends",
+    },
+    discoelysium: {
+        forumId: "forum_1765485900026_3t7qd4dkf",
+        title: "General Discussion",
+        gameTitle: "Disco Elysium",
+    },
+    theroom: {
+        forumId: "forum_1765544402914_x5sx5m1im",
+        title: "Speedruns",
+        gameTitle: "The Room (Game)"
+    },
+    titanfall2: {
+        forumId: "forum_1765562403375_1oyycofyl",
+        title: "Help & Support",
+        gameTitle: "Titanfall 2",
+    },
+    marvelsspiderman: {
+        forumId: "forum_1765564200033_2i7zz1z44",
+        title: "Speedruns",
+        gameTitle: "Marvel's Spider-Man",
+    },
+    reddeadredemption2: {
+        forumId: "forum_1765630800043_poiuwxl56",
+        title: "General Discussion",
+        gameTitle: "Red Dead Redemption 2",
+    },
+    vampirethemasquerade: {
+        forumId: "forum_1765630803081_dohwiqa7x",
+        title: "Gameplay",
+        gameTitle: "Vampire: The Masquerade - Bloodhunt",
+    },
+    assassinscreedvalhalla: {
+        forumId: "forum_1765658700086_l98fb5asd",
+        title: "General Discussion",
+        gameTitle: "Assassin's Creed Valhalla",
+    },
+    dragonballfighterz: {
+        forumId: "forum_1765717200148_kdsx0mujh",
+        title: "Gameplay",
+        gameTitle: "Dragon Ball FighterZ",
+    },
+    crashbandicootnsanetrilogy: {
+        forumId: "forum_1765803600047_cr88cm4rf",
+        title: "Gameplay",
+        gameTitle: "Crash Bandicoot: N. Sane Trilogy",
+    },
+    thecrewmotorfest: {
+        forumId: "forum_1765735200026_uk3s5hnlc",
+        title: "General Discussion",
+        gameTitle: "The Crew: Motorfest",
+    },
+    terraria: {
+        forumId: "forum_1765821600040_nl5k2i19w",
+        title: "Gameplay",
+        gameTitle: "Terraria",
+    },
+    harvestmoon: {
+        forumId: "forum_1765745100037_pv6lq4ewh",
+        title: "Gameplay",
+        gameTitle: "Harvest Moon",
+    },
+    bejeweled: {
+        forumId: "forum_1765908000031_f1egw2poo",
+        title: "Gameplay",
+        gameTitle: "Bejeweled",
+    },
+    returnoftheobradinn: {
+        forumId: "forum_1765823400030_pt19q5zpm",
+        title: "Mods",
+        gameTitle: "Return of the Obra Dinn",
+    },
+    wipeoutomegacollection: {
+        forumId: "forum_1765908002702_f8d25potu",
+        title: "Gameplay",
+        gameTitle: "Wipeout Omega Collection",
+    },
+    theelderscrollsv: {
+        forumId: "forum_1765909800276_ktm0b2ks2",
+        title: "Gameplay",
+        gameTitle: "The Elder Scrolls V: Skyrim",
+    },
+    supermarioodyssey: {
+        forumId: "forum_1765976400041_cr63gw075",
+        title: "Gameplay",
+        gameTitle: "Super Mario Odyssey",
+    },
+    starwarsjedisurvivor: {
+        forumId: "forum_1766062800042_ovfsrxizx",
+        title: "General Discussion",
+        gameTitle: "Star Wars Jedi: Survivor",
+    },
+    zeldabreathofthewild: {
+        forumId: "forum_1766090700026_778j09i7v",
+        title: "Mods",
+        gameTitle: "The Legend of Zelda: Breath of the Wild",
+    },
+    planetcoaster: {
+        forumId: "forum_1766098803286_jiu9mkja5",
+        title: "General Discussion",
+        gameTitle: "Planet Coaster",
+    },
+    thewitness: {
+        forumId: "forum_1766149202879_gcll70wi5",
+        title: "General Discussion",
+        gameTitle: "The Witness (Game)",
+    },
+    thewitcher3: {
+        forumId: "forum_1766163600031_kq36x5pil",
+        title: "General Discussion",
+        gameTitle: "The Witcher 3: Wild Hunt",
+    },
+    babaisyou: {
+        forumId: "forum_1766167202278_er25tt8gz",
+        title: "General Discussion",
+        gameTitle: "Baba is You",
+    },
+    tetris: {
+        forumId: "forum_1766195100370_hefugjhtk",
+        title: "General Discussion",
+        gameTitle: "Tetris",
+    },
+    overwatch: {
+        forumId: "forum_1766235600039_o22ln5r7x",
+        title: "Gameplay",
+        gameTitle: "Overwatch",
+    },
+    pubgbattlegrounds: {
+        forumId: "forum_1766322000048_okfsg7gfk",
+        title: "Help & Support",
+        gameTitle: "PUBG: Battlegrounds",
+    },
+    pokemonlegendsarceus: {
+        forumId: "forum_1766325600027_8drfyhhmo",
+        title: "Mods",
+        gameTitle: "Pokémon Legends: Arceus",
+    },
+    citiesskylines: {
+        forumId: "forum_1766336400028_h7cd9mjg9",
+        title: "Mods",
+        gameTitle: "Cities: Skylines",
+    },
+    donkeykongcountry: {
+        forumId: "forum_1766349900040_krsoonmf2",
+        title: "Speedruns",
+        gameTitle: "Donkey Kong Country",
+    },
+    baldursgate3: {
+        forumId: "forum_1766408403807_uzsqwynq7",
+        title: "Mods",
+        gameTitle: "Baldur's Gate 3",
     }
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
