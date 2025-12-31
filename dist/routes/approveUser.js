@@ -9,6 +9,7 @@ const syncUserData_1 = require("../utils/syncUserData");
 const mongoose_1 = require("mongoose");
 const sendEmail_1 = require("../utils/sendEmail");
 const emailTemplates_1 = require("../utils/emailTemplates");
+const checkProAccess_1 = require("../utils/checkProAccess");
 const router = (0, express_1.Router)();
 router.post('/approveUser', async (req, res) => {
     try {
@@ -31,7 +32,9 @@ router.post('/approveUser', async (req, res) => {
         }
         // Store original position for pro access check
         const originalPosition = user.position;
-        const hasProAccess = typeof originalPosition === 'number' && originalPosition <= 5000;
+        // Check pro access eligibility based on signup timestamp and position
+        // This ensures users who signed up after 12/31/2025 don't get pro access
+        const hasProAccess = (0, checkProAccess_1.checkProAccessEligibility)(user.userId, originalPosition);
         // Update user in a single operation - use MongoDB _id for the update
         const updatedUser = await User_1.default.findByIdAndUpdate(user._id, {
             $set: {

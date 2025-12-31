@@ -47,6 +47,7 @@
     "test:moderation": "npx ts-node test-content-moderation.ts",
     "test:email": "npx ts-node test-email.ts",
     "test:approval-email": "npx ts-node test-approval-email.ts",
+    "test:pro-deadline": "npx ts-node scripts/verify-pro-deadline.ts",
     "upload:linkedin-images": "npx ts-node scripts/uploadLinkedInImages.ts",
     "update:linkedin-urls": "npx ts-node scripts/updateLinkedInImageUrls.ts"
   },

@@ -4,6 +4,7 @@ import { syncUserToWingman } from '../utils/syncUserData';
 import { isValidObjectId } from 'mongoose';
 import { sendEmail } from '../utils/sendEmail';
 import { getApprovalNotificationEmail } from '../utils/emailTemplates';
+import { checkProAccessEligibility } from '../utils/checkProAccess';
 
 const router = Router();
 
@@ -33,7 +34,9 @@ router.post('/approveUser', async (req: Request, res: Response) => {
 
     // Store original position for pro access check
     const originalPosition = user.position;
-    const hasProAccess = typeof originalPosition === 'number' && originalPosition <= 5000;
+    // Check pro access eligibility based on signup timestamp and position
+    // This ensures users who signed up after 12/31/2025 don't get pro access
+    const hasProAccess = checkProAccessEligibility(user.userId, originalPosition);
 
     // Update user in a single operation - use MongoDB _id for the update
     const updatedUser = await User.findByIdAndUpdate(user._id, {

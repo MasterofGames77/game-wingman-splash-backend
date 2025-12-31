@@ -4,6 +4,7 @@ import { isEmail } from 'validator';
 import { sendEmail } from '../utils/sendEmail';
 import { getSignupConfirmationEmail } from '../utils/emailTemplates';
 import { generateCrossDomainAuthToken } from '../utils/jwt';
+import { checkProAccessEligibility } from '../utils/checkProAccess';
 
 const router = Router();
 
@@ -129,13 +130,8 @@ router.post('/signup', async (req, res) => {
     // Optimize position calculation using countDocuments with no conditions
     const position = await User.countDocuments({}, { lean: true }) + 1;
 
-    // Determine pro access status once
-    const hasProAccess = position <= 5000;
-    const bonusMessage = hasProAccess 
-      ? `\nYou are the ${getOrdinalSuffix(position)} of the first 5,000 users to sign up! You will receive 1 year of Wingman Pro for free!`
-      : '';
-
-    // Create and save new user with retry logic for duplicate key errors
+    // Create user first to get userId (which contains signup timestamp)
+    // We need the userId to check the deadline
     let newUser: IUser | null = null;
     let retries = 0;
     const MAX_RETRIES = 3;
@@ -146,7 +142,7 @@ router.post('/signup', async (req, res) => {
           email,
           position,
           isApproved: false,
-          hasProAccess
+          hasProAccess: false // Will be set correctly after we have userId
         });
 
         await user.save();
@@ -172,6 +168,20 @@ router.post('/signup', async (req, res) => {
     if (!newUser) {
       throw new Error('Failed to create user');
     }
+
+    // Now check pro access eligibility based on signup timestamp and position
+    // This ensures users who sign up after 12/31/2025 don't get pro access
+    const hasProAccess = checkProAccessEligibility(newUser.userId, position);
+    
+    // Update hasProAccess if it changed
+    if (newUser.hasProAccess !== hasProAccess) {
+      newUser.hasProAccess = hasProAccess;
+      await newUser.save();
+    }
+    
+    const bonusMessage = hasProAccess 
+      ? `\nYou are the ${getOrdinalSuffix(position)} of the first 5,000 users to sign up! You will receive 1 year of Wingman Pro for free!`
+      : '';
 
     // Send signup confirmation email (non-blocking) - ONLY for new signups
     let emailSent = false;

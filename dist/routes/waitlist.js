@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const User_1 = __importDefault(require("../models/User"));
 const validator_1 = require("validator");
+const checkProAccess_1 = require("../utils/checkProAccess");
 const router = (0, express_1.Router)();
 router.post('/waitlist', async (req, res) => {
     const email = String(req.body.email).toLowerCase().trim();
@@ -21,9 +22,8 @@ router.post('/waitlist', async (req, res) => {
         }
         // Optimize position calculation using countDocuments with no conditions
         const position = await User_1.default.countDocuments({}, { lean: true }) + 1;
-        // Determine pro access status once
-        const hasProAccess = position <= 5000;
-        // Create and save new user with retry logic for duplicate key errors
+        // Create user first to get userId (which contains signup timestamp)
+        // We need the userId to check the deadline
         let newUser;
         let retries = 0;
         const MAX_RETRIES = 3;
@@ -33,7 +33,7 @@ router.post('/waitlist', async (req, res) => {
                     email,
                     position,
                     isApproved: false,
-                    hasProAccess
+                    hasProAccess: false // Will be set correctly after we have userId
                 });
                 await newUser.save();
                 break; // Success, exit retry loop
@@ -53,9 +53,18 @@ router.post('/waitlist', async (req, res) => {
                 throw error;
             }
         }
+        // Now check pro access eligibility based on signup timestamp and position
+        // This ensures users who sign up after 12/31/2025 don't get pro access
+        const hasProAccess = (0, checkProAccess_1.checkProAccessEligibility)(newUser.userId, position);
+        // Update hasProAccess if it changed
+        if (newUser.hasProAccess !== hasProAccess) {
+            newUser.hasProAccess = hasProAccess;
+            await newUser.save();
+        }
         return res.status(201).json({
             message: 'Congratulations! You\'ve been added to the waitlist.',
-            position
+            position,
+            hasProAccess
         });
     }
     catch (error) {

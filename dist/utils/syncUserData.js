@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.syncUserToWingman = void 0;
 const databaseConnections_1 = require("./databaseConnections");
+const checkProAccess_1 = require("./checkProAccess");
 // Cache database connection
 let wingmanDBConnection = null;
 // Memoize default progress object to avoid recreation on each call
@@ -48,8 +49,6 @@ const DEFAULT_PROGRESS = Object.freeze({
         proContributor: 0
     }
 });
-// Cache pro deadline to avoid creating Date object repeatedly
-const PRO_DEADLINE = new Date('2025-12-31T23:59:59.999Z').getTime();
 const syncUserToWingman = async (splashUser) => {
     try {
         // Reuse existing connection if available
@@ -59,13 +58,24 @@ const syncUserToWingman = async (splashUser) => {
                 throw new Error('Failed to connect to Wingman database');
             wingmanDBConnection = db;
         }
-        // Extract timestamp directly from userId for better performance
-        // Format: user-{timestamp}-{randomSuffix} (new) or user-{timestamp} (old)
-        // The timestamp is always at index 1 after splitting by '-'
-        const signupTimestamp = parseInt(splashUser.userId.split('-')[1], 10);
-        // Use the hasProAccess from splash page data, with fallback logic
-        const hasProAccess = splashUser.hasProAccess || ((typeof splashUser.position === 'number' && splashUser.position <= 5000) ||
-            signupTimestamp <= PRO_DEADLINE);
+        // Check pro access eligibility based on signup timestamp and position
+        // If position is null (user already approved), we use the hasProAccess value
+        // that was calculated during approval, but we still verify the deadline
+        let hasProAccess;
+        if (splashUser.position === null) {
+            // User is already approved - use the hasProAccess value that was set during approval
+            // But verify the deadline is still respected
+            const timestampStr = splashUser.userId.split('-')[1];
+            const signupTimestamp = timestampStr ? parseInt(timestampStr, 10) : NaN;
+            const signedUpBeforeDeadline = !isNaN(signupTimestamp) && signupTimestamp <= (0, checkProAccess_1.getProDeadline)();
+            // Only grant pro access if they signed up before deadline AND hasProAccess was set to true
+            // (hasProAccess would have been calculated correctly during approval with original position)
+            hasProAccess = signedUpBeforeDeadline && splashUser.hasProAccess === true;
+        }
+        else {
+            // User not yet approved - check eligibility based on position and deadline
+            hasProAccess = (0, checkProAccess_1.checkProAccessEligibility)(splashUser.userId, splashUser.position);
+        }
         console.log(`Syncing user to main application: email=${splashUser.email}, userId=${splashUser.userId}, hasProAccess=${hasProAccess}`);
         // Use updateOne with upsert - ensure userId is always set correctly
         const result = await wingmanDBConnection.collection('users').updateOne({ email: splashUser.email }, {
