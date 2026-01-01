@@ -295,11 +295,18 @@ async function getWingmanDatabase() {
         console.error('Database connection is disconnected. State:', wingmanDB.readyState);
         throw new Error('Database connection is disconnected');
     }
-    // Access database - mongoose.Connection has .db property
-    const db = wingmanDB.db || wingmanDB;
+    // Access database - mongoose.Connection has .db property for native MongoDB driver
+    // Mongoose connections expose the native MongoDB driver via the .db property
+    // Type assertion to ensure TypeScript recognizes the native driver database
+    const db = wingmanDB.db;
     if (!db) {
-        console.error('Database object not available');
-        throw new Error('Failed to access database');
+        console.error('Database object not available - connection.db is undefined');
+        throw new Error('Failed to access database - native driver database not available');
+    }
+    // Verify it's the native MongoDB driver database object
+    if (typeof db.collection !== 'function') {
+        console.error('Database object does not have collection method - not a native MongoDB driver database');
+        throw new Error('Database object is not a native MongoDB driver database');
     }
     return db;
 }
@@ -371,7 +378,7 @@ async function getAllSplashPagePosts(db, gameTitle) {
     // Fetch all forums
     let forums;
     try {
-        forums = await forumsCollection.find(query, {
+        const cursor = forumsCollection.find(query, {
             projection: {
                 _id: 0,
                 forumId: 1,
@@ -380,7 +387,9 @@ async function getAllSplashPagePosts(db, gameTitle) {
                 category: 1,
                 posts: 1,
             }
-        }).toArray();
+        });
+        // Ensure we're using the native MongoDB driver cursor
+        forums = await cursor.toArray();
     }
     catch (queryError) {
         const errorMessage = queryError instanceof Error ? queryError.message : 'Unknown error';
@@ -496,7 +505,8 @@ async function validateParentPost(db, parentPostId) {
     const forumsCollection = db.collection('forums');
     // Search all splash page forums for the parent post
     const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
-    const forums = await forumsCollection.find({ forumId: { $in: forumIds } }, { projection: { forumId: 1, posts: 1 } }).toArray();
+    const cursor = forumsCollection.find({ forumId: { $in: forumIds } }, { projection: { forumId: 1, posts: 1 } });
+    const forums = await cursor.toArray();
     // Search through all forums to find the parent post
     for (const forum of forums) {
         const posts = forum.posts || [];
@@ -746,7 +756,8 @@ router.get('/public/forum-posts/available-games', cacheHeaders_1.cachePresets.st
         const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
         const forumsCollection = db.collection('forums');
         // Fetch all forums
-        const forums = await forumsCollection.find({ forumId: { $in: forumIds } }, { projection: { forumId: 1, gameTitle: 1, posts: 1 } }).toArray();
+        const cursor = forumsCollection.find({ forumId: { $in: forumIds } }, { projection: { forumId: 1, gameTitle: 1, posts: 1 } });
+        const forums = await cursor.toArray();
         // Group forums by gameTitle and count posts
         const gameMap = new Map();
         for (const forum of forums) {

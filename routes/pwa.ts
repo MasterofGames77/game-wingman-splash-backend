@@ -582,7 +582,7 @@ router.post('/api/pwa/queue/process', async (req: Request, res: Response) => {
         // Mark as processing
         offlineQueue.updateActionStatus(action.id, 'processing');
 
-        // Make the actual API call
+        // Make the actual API call with timeout (25 seconds to match frontend and stay under Heroku's 30s limit)
         const response = await axios({
           method: action.method,
           url: `${baseUrl}${action.endpoint}`,
@@ -591,6 +591,7 @@ router.post('/api/pwa/queue/process', async (req: Request, res: Response) => {
             'Content-Type': 'application/json',
             ...action.headers
           },
+          timeout: 25000, // 25 seconds timeout
           validateStatus: () => true // Don't throw on any status
         });
 

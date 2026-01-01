@@ -28,6 +28,23 @@ const resend_1 = require("resend");
 // Lazy initialization - Resend client will be created when needed
 let resendClient = null;
 /**
+ * Wraps a promise with a timeout
+ * @param promise - The promise to wrap
+ * @param timeoutMs - Timeout in milliseconds (default: 25000 for 25 seconds)
+ * @param errorMessage - Custom error message for timeout
+ * @returns Promise that rejects if timeout is exceeded
+ */
+function withTimeout(promise, timeoutMs = 25000, errorMessage = 'Operation timed out') {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error(`${errorMessage} (${timeoutMs}ms)`));
+            }, timeoutMs);
+        })
+    ]);
+}
+/**
  * Gets or creates the Resend client instance
  */
 function getResendClient() {
@@ -58,13 +75,14 @@ const sendEmail = async (to, subject, html, text) => {
             }
             const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
             console.log(`Attempting to send email via Resend to ${to}...`);
-            const { data, error } = await resend.emails.send({
+            // Wrap Resend API call with timeout (25 seconds to stay under Heroku's 30s limit)
+            const { data, error } = await withTimeout(resend.emails.send({
                 from: fromEmail,
                 to: [to],
                 subject,
                 html,
                 text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML tags for text fallback
-            });
+            }), 25000, 'Email sending timed out');
             if (error) {
                 console.error(`Resend API error sending email to ${to}:`, {
                     message: error.message,
@@ -88,13 +106,14 @@ const sendEmail = async (to, subject, html, text) => {
                     pass: process.env.EMAIL_PASS,
                 },
             });
-            await transporter.sendMail({
+            // Wrap nodemailer call with timeout (25 seconds to stay under Heroku's 30s limit)
+            await withTimeout(transporter.sendMail({
                 from: process.env.EMAIL_USER,
                 to,
                 subject,
                 html,
                 text: text || html.replace(/<[^>]*>/g, ''),
-            });
+            }), 25000, 'Email sending timed out');
             console.log(`Email sent successfully to ${to} via nodemailer (fallback)`);
             return;
         }

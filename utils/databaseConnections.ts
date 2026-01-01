@@ -36,11 +36,21 @@ export const connectToSplashDB = async (): Promise<mongoose.Connection> => {
       splashDB.readyState === 0 && process.env.NODE_ENV === 'production' && process.exit(1);
     });
 
-    // Wait for connection to be ready
-    await new Promise<void>((resolve) => {
+    // Wait for connection to be ready with timeout
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Connection timeout: Failed to connect to Splash Page DB within 30 seconds'));
+      }, 30000);
+
       splashDB.once('connected', () => {
+        clearTimeout(timeout);
         console.log('Connected to Splash Page DB (newWingman)');
         resolve();
+      });
+
+      splashDB.once('error', (error) => {
+        clearTimeout(timeout);
+        reject(error);
       });
     });
 

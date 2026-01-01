@@ -3,6 +3,7 @@ import { connectToWingmanDB } from '../utils/databaseConnections';
 import User from '../models/User';
 import { isEmail } from 'validator';
 import { ObjectId } from 'mongodb';
+import mongoose from 'mongoose';
 import { checkContentModeration } from '../utils/contentModeration';
 import { cachePresets, addETag } from '../utils/cacheHeaders';
 
@@ -297,12 +298,20 @@ async function getWingmanDatabase(): Promise<any> {
     throw new Error('Database connection is disconnected');
   }
 
-  // Access database - mongoose.Connection has .db property
-  const db = (wingmanDB as any).db || wingmanDB;
+  // Access database - mongoose.Connection has .db property for native MongoDB driver
+  // Mongoose connections expose the native MongoDB driver via the .db property
+  // Type assertion to ensure TypeScript recognizes the native driver database
+  const db = (wingmanDB as mongoose.Connection).db;
 
   if (!db) {
-    console.error('Database object not available');
-    throw new Error('Failed to access database');
+    console.error('Database object not available - connection.db is undefined');
+    throw new Error('Failed to access database - native driver database not available');
+  }
+
+  // Verify it's the native MongoDB driver database object
+  if (typeof db.collection !== 'function') {
+    console.error('Database object does not have collection method - not a native MongoDB driver database');
+    throw new Error('Database object is not a native MongoDB driver database');
   }
 
   return db;
@@ -402,7 +411,7 @@ async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostW
   // Fetch all forums
   let forums;
   try {
-    forums = await forumsCollection.find(query, {
+    const cursor = forumsCollection.find(query, {
       projection: {
         _id: 0,
         forumId: 1,
@@ -411,7 +420,9 @@ async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostW
         category: 1,
         posts: 1,
       }
-    }).toArray();
+    });
+    // Ensure we're using the native MongoDB driver cursor
+    forums = await cursor.toArray();
   } catch (queryError) {
     const errorMessage = queryError instanceof Error ? queryError.message : 'Unknown error';
     console.error('Database query error in getAllSplashPagePosts:', errorMessage);
@@ -540,10 +551,11 @@ async function validateParentPost(db: any, parentPostId: string): Promise<{ foru
   
   // Search all splash page forums for the parent post
   const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
-  const forums = await forumsCollection.find(
+  const cursor = forumsCollection.find(
     { forumId: { $in: forumIds } },
     { projection: { forumId: 1, posts: 1 } }
-  ).toArray();
+  );
+  const forums = await cursor.toArray();
 
   // Search through all forums to find the parent post
   for (const forum of forums) {
@@ -819,10 +831,11 @@ router.get('/public/forum-posts/available-games', cachePresets.staticContent, ad
     const forumsCollection = db.collection('forums');
 
     // Fetch all forums
-    const forums = await forumsCollection.find(
+    const cursor = forumsCollection.find(
       { forumId: { $in: forumIds } },
       { projection: { forumId: 1, gameTitle: 1, posts: 1 } }
-    ).toArray();
+    );
+    const forums = await cursor.toArray();
 
     // Group forums by gameTitle and count posts
     const gameMap = new Map<string, { gameTitle: string; forumCount: number; postCount: number }>();

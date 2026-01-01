@@ -1,6 +1,28 @@
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import fs from 'fs';
 
+/**
+ * Wraps a promise with a timeout
+ * @param promise - The promise to wrap
+ * @param timeoutMs - Timeout in milliseconds (default: 25000 for 25 seconds)
+ * @param errorMessage - Custom error message for timeout
+ * @returns Promise that rejects if timeout is exceeded
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 25000,
+  errorMessage: string = 'Operation timed out'
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`${errorMessage} (${timeoutMs}ms)`));
+      }, timeoutMs);
+    })
+  ]);
+}
+
 export interface SafeSearchResult {
   adult: string;
   violence: string;
@@ -183,8 +205,12 @@ export async function moderateImage(imagePath: string): Promise<ModerationResult
       credentials: credentials,
     });
 
-    // Perform SafeSearch detection
-    const [safeSearchResult] = await client.safeSearchDetection(imagePath);
+    // Perform SafeSearch detection with timeout (25 seconds to stay under Heroku's 30s limit)
+    const [safeSearchResult] = await withTimeout(
+      client.safeSearchDetection(imagePath),
+      25000,
+      'Image moderation API call timed out'
+    );
     const safeSearchAnnotation = safeSearchResult.safeSearchAnnotation;
 
     if (!safeSearchAnnotation) {
