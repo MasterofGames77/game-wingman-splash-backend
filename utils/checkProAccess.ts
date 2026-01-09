@@ -1,9 +1,9 @@
 /**
- * Pro access deadline: December 31, 2025 at 23:59:59.999 UTC
+ * Pro access deadline: July 31, 2026 at 11:59:59.999 PM EDT (August 1, 2026 03:59:59.999 UTC)
  * Users who sign up on or before this date AND are in the first 5,000 positions
  * will receive 1 year of Wingman Pro for free.
  */
-const PRO_DEADLINE = new Date('2025-12-31T23:59:59.999Z').getTime();
+const PRO_DEADLINE = new Date('2026-08-01T03:59:59.999Z').getTime();
 
 /**
  * Checks if a user is eligible for pro access based on their signup timestamp and position.
@@ -28,7 +28,7 @@ export function checkProAccessEligibility(userId: string, position: number | nul
   }
   
   // User must meet BOTH conditions:
-  // 1. Signed up on or before the deadline (12/31/2025 23:59:59.999 UTC)
+  // 1. Signed up on or before the deadline (7/31/2026 11:59:59.999 PM EDT / 8/1/2026 03:59:59.999 UTC)
   // 2. Position is within the first 5,000
   // Note: If position is null (user already approved), we can't verify position eligibility,
   // so we return false unless we have a valid position number

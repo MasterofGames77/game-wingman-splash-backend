@@ -59,6 +59,7 @@ const syncUserToWingman = async (splashUser) => {
             wingmanDBConnection = db;
         }
         // Check pro access eligibility based on signup timestamp and position
+        // Deadline: July 31, 2026 11:59:59 PM EDT (August 1, 2026 03:59:59.999 UTC)
         // If position is null (user already approved), we use the hasProAccess value
         // that was calculated during approval, but we still verify the deadline
         let hasProAccess;

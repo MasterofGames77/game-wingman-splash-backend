@@ -35,7 +35,8 @@ router.post('/approveUser', async (req: Request, res: Response) => {
     // Store original position for pro access check
     const originalPosition = user.position;
     // Check pro access eligibility based on signup timestamp and position
-    // This ensures users who signed up after 12/31/2025 don't get pro access
+    // Deadline: July 31, 2026 11:59:59 PM EDT (August 1, 2026 03:59:59.999 UTC)
+    // This ensures users who signed up after the deadline don't get pro access
     const hasProAccess = checkProAccessEligibility(user.userId, originalPosition);
 
     // Update user in a single operation - use MongoDB _id for the update

@@ -147,7 +147,8 @@ router.post('/signup', async (req, res) => {
             throw new Error('Failed to create user');
         }
         // Now check pro access eligibility based on signup timestamp and position
-        // This ensures users who sign up after 12/31/2025 don't get pro access
+        // Deadline: July 31, 2026 11:59:59 PM EDT (August 1, 2026 03:59:59.999 UTC)
+        // This ensures users who sign up after the deadline don't get pro access
         const hasProAccess = (0, checkProAccess_1.checkProAccessEligibility)(newUser.userId, position);
         // Update hasProAccess if it changed
         if (newUser.hasProAccess !== hasProAccess) {
