@@ -15,6 +15,7 @@ const publicForumPosts_1 = __importDefault(require("./routes/publicForumPosts"))
 const uploadForumImage_1 = __importDefault(require("./routes/uploadForumImage"));
 const linkedinPosts_1 = __importDefault(require("./routes/linkedinPosts"));
 const pwa_1 = __importDefault(require("./routes/pwa"));
+const questions_1 = __importDefault(require("./routes/questions"));
 // import publicQuestionResponsesRoute from './routes/publicQuestionResponses'; // Commented out - may not be needed for splash page
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -146,6 +147,7 @@ app.use('/api', approveUser_1.default);
 app.use('/api', uploadForumImage_1.default);
 app.use('/api', publicForumPosts_1.default);
 app.use('/api', linkedinPosts_1.default);
+app.use('/api', questions_1.default);
 // app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
 // Debug: Log registered routes (development only)
 if (process.env.NODE_ENV === 'development') {

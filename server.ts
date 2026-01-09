@@ -10,6 +10,7 @@ import publicForumPostsRoute from './routes/publicForumPosts';
 import uploadForumImageRoute from './routes/uploadForumImage';
 import linkedinPostsRoute from './routes/linkedinPosts';
 import pwaRoutes from './routes/pwa';
+import questionsRoute from './routes/questions';
 // import publicQuestionResponsesRoute from './routes/publicQuestionResponses'; // Commented out - may not be needed for splash page
 
 dotenv.config();
@@ -150,6 +151,7 @@ app.use('/api', approveUserRoute);
 app.use('/api', uploadForumImageRoute);
 app.use('/api', publicForumPostsRoute);
 app.use('/api', linkedinPostsRoute);
+app.use('/api', questionsRoute);
 // app.use('/api', publicQuestionResponsesRoute); // Commented out - may not be needed for splash page
 
 // Debug: Log registered routes (development only)
