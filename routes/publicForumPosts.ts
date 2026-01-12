@@ -11,12 +11,12 @@ const router = Router();
 
 // Available forums to showcase on splash page
 const SPLASH_PAGE_FORUMS = {
-  xenoblade: {
+  xenoblade3hero: {
     forumId: "forum_1760222601584_k4k6xncld",
     title: "Favorite Hero in Xenoblade Chronicles 3",
     gameTitle: "Xenoblade Chronicles 3",
   },
-  eldenring: {
+  eldenringlore: {
     forumId: "forum_1763681917979_3qgttdvtr",
     title: "Elden Ring Lore",
     gameTitle: "Elden Ring",
@@ -260,11 +260,231 @@ const SPLASH_PAGE_FORUMS = {
     forumId: "forum_1766408403807_uzsqwynq7",
     title: "Mods",
     gameTitle: "Baldur's Gate 3",
-  }
+  },
+  jakanddaxter: {
+    forumId: "forum_1765650600021_5qpodadw1",
+    title: "Gameplay",
+    gameTitle: "Jak and Daxter: The Precursor Legacy",
+  },
+  jakprecursorlegacy: {
+    forumId: "forum_1765731600025_9qazdyc4y",
+    title: "Speedruns",
+    gameTitle: "Jak and Daxter: The Precursor Legacy",
+  },
+  discoelysiumgameplay: {
+    forumId: "forum_1765904400033_d1lmg3zfc",
+    title: "Gameplay",
+    gameTitle: "Disco Elysium",
+  },
+  elderscrollsv: {
+    forumId: "forum_1765980000034_7zjijo17s",
+    title: "General Discussion",
+    gameTitle: "The Elder Scrolls V: Skyrim",
+  },
+  EldenRinghelp: {
+    forumId: "forum_1766235604168_7wov1qikl",
+    title: "Help & Support",
+    gameTitle: "Elden Ring",
+  },
+  phasmophobia: {
+    forumId: "forum_1767732300044_ppdbsos92",
+    title: "Speedruns",
+    gameTitle: "Phasmophobia",
+  },
+  deadspace: {
+    forumId: "forum_1767794400045_3ht7o54pd",
+    title: "Gameplay",
+    gameTitle: "Dead Space",
+  },
+  tenchustealthassassins: {
+    forumId: "forum_1767805200039_vf41djbef",
+    title: "Speedruns",
+    gameTitle: "Tenchu: Stealth Assassins",
+  },
+  xenoblade3speed: {
+    forumId: "forum_1767808800042_rngkyyegz",
+    title: "Speedruns",
+    gameTitle: "Xenoblade Chronicles 3",
+  },
+  castlevaniasymphonyofnight: {
+    forumId: "forum_1767808804987_jyn9u3qpz",
+    title: "Speedruns",
+    gameTitle: "Castlevania: Symphony of the Night",
+  },
+  sekiro: {
+    forumId: "forum_1767810600038_hfzqnmujn",
+    title: "General Discussion",
+    gameTitle: "Sekiro: Shadows Die Twice",
+  },
+  markoftheninja: {
+    forumId: "forum_1767818700047_dugeftjyb",
+    title: "Speedruns",
+    gameTitle: "Mark of the Ninja",
+  },
+  tomclancysplintercell: {
+    forumId: "forum_1767877200048_l21a86kqx",
+    title: "Speedruns",
+    gameTitle: "Tom Clancy's Splinter Cell: Chaos Theory",
+  },
+  finalfantasyvii: {
+    forumId: "forum_1767877204692_romlj6pwn",
+    title: "Gameplay",
+    gameTitle: "Final Fantasy VII",
+  },
+  wiisports: {
+    forumId: "forum_1767895200061_x9m814h04",
+    title: "General Discussion",
+    gameTitle: "Wii Sports",
+  },
+  valorant: {
+    forumId: "forum_1767895208558_4hag44uev",
+    title: "Gameplay",
+    gameTitle: "Valorant",
+  },
+  honorofkings: {
+    forumId: "forum_1767963600077_5e6nv51u8",
+    title: "General Discussion",
+    gameTitle: "Honor of Kings",
+  },
+  astrobot: {
+    forumId: "forum_1767967200049_r3bdflu7l",
+    title: "Gameplay",
+    gameTitle: "Astro Bot",
+  },
+  hitmanworldofassassination: {
+    forumId: "forum_1767981603240_n37zdvk52",
+    title: "General Discussion",
+    gameTitle: "Hitman: World of Assassination",
+  },
+  stardewvalley: {
+    forumId: "forum_1768050000163_ymv9ip7rj",
+    title: "General Discussion",
+    gameTitle: "Stardew Valley",
+  },
+  jedisurvivorgameplay: {
+    forumId: "forum_1767983400036_dfavztjaz",
+    title: "Gameplay",
+    gameTitle: "Star Wars Jedi: Survivor",
+  },
+  harvestmoongeneral: {
+    forumId: "forum_1767991500052_apbj1bxso",
+    title: "General Discussion",
+    gameTitle: "Harvest Moon",
+  },
+  raft: {
+    forumId: "forum_1768050003238_jx6qnoim5",
+    title: "General Discussion",
+    gameTitle: "Raft",
+  },
+  dustelysiantail: {
+    forumId: "forum_1768064400046_iy5t0q4a5",
+    title: "Gameplay",
+    gameTitle: "Dust: An Elysian Tail",
+  },
+  shovelknight: {
+    forumId: "forum_1768077900037_i6eg9zinu",
+    title: "Gameplay",
+    gameTitle: "Shovel Knight",
+  },
+  nierautomata: {
+    forumId: "forum_1768136400054_bchcn3fef",
+    title: "Gameplay",
+    gameTitle: "NieR: Automata",
+  },
+  supersmashbrosultimate: {
+    forumId: "forum_1768154400039_dalgdkhwl",
+    title: "General Discussion",
+    gameTitle: "Super Smash Bros. Ultimate",
+  },
+  theif2: {
+    forumId: "forum_1768154403477_g67h5xb7w",
+    title: "Gamplay",
+    gameTitle: "Theif 2: The Metal Age",
+  },
+  cavestoryplus: {
+    forumId: "forum_1768156200117_rt55ompcd",
+    title: "General Discussion",
+    gameTitle: "Cave Story+",
+  },
+  axiomverge: {
+    forumId: "forum_1768164300036_mloapl9nm",
+    title: "Help & Support",
+    gameTitle: "Axiom Verge",
+  },
+  nhl14: {
+    forumId: "forum_1768222800057_9f4owg2na",
+    title: "General Discussion",
+    gameTitle: "NHL 14",
+  },
+  microsoftflightsimulator: {
+    forumId: "forum_1768222803904_3ngc4l2s9",
+    title: "Help & Support",
+    gameTitle: "Microsoft Flight Simulator",
+  },
+  dishonored2help: {
+    forumId: "forum_1768240800086_7c1bzuoe9",
+    title: "Help & Support",
+    gameTitle: "Dishonored 2",
+  },
+  finalfantasyviispeed: {
+    forumId: "forum_1768240806140_d1dm8d210",
+    title: "Speedruns",
+    gameTitle: "Final Fantasy VII",
+  },
+  alienisolation: {
+    forumId: "forum_1768242600042_u69ctqz9h",
+    title: "Gameplay",
+    gameTitle: "Alien: Isolation",
+  },
+  donkeykongcountryhelp: {
+    forumId: "forum_1768069800040_qbtf1negk",
+    title: "Help & Support",
+    gameTitle: "Donkey Kong Country",
+  },
+  fzerogxgeneral: {
+    forumId: "forum_1768068005337_s7degfsob",
+    title: "General Discussion",
+    gameTitle: "F-Zero GX",
+  },
+  supermarioodysseygeneral: {
+    forumId: "forum_1766498400033_fku88hylt",
+    title: "General Discussion",
+    gameTitle: "Super Mario Odyssey",
+  },
+  crewmotorfestmods: {
+    forumId: "forum_1766426400044_qcycehgw2",
+    title: "Mods",
+    gameTitle: "The Crew: Motorfest",
+  },
+  storyofseasonshelp: {
+    forumId: "forum_1765976403790_8to0xuhes",
+    title: "Help & Support",
+    gameTitle: "Story of Seasons",
+  },
+  portal2mods: {
+    forumId: "forum_1766250000027_xkn1y0y0d",
+    title: "Mods",
+    gameTitle: "Portal 2",
+  },
+  crashnsanetrilogyhelp: {
+    forumId: "forum_1766408400041_m5ek27nmw",
+    title: "Help & Support",
+    gameTitle: "Crash Bandicoot: N. Sane Trilogy",
+  },
+  acvalhallagameplay: {
+    forumId: "forum_1766255400033_bg2wqb3j9",
+    title: "Gameplay",
+    gameTitle: "Assassin's Creed Valhalla",
+  },
+  thelastofusgeneral: {
+    forumId: "forum_1765572300021_ufrafordh",
+    title: "General Discussion",
+    gameTitle: "The Last of Us",
+  },
 };
 
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
-const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade.forumId;
+const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade3hero.forumId;
 
 /**
  * Helper function to connect to Wingman database with proper error handling
