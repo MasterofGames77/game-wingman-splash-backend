@@ -41,7 +41,7 @@ function getResendClient(): Resend | null {
 }
 
 /**
- * Sends an email using Resend (recommended) or falls back to nodemailer
+ * Sends an email using Resend
  * @param to - Recipient email address
  * @param subject - Email subject
  * @param html - HTML content of the email
@@ -55,77 +55,44 @@ export const sendEmail = async (
   text?: string
 ): Promise<void> => {
   try {
-    // Use Resend if API key is configured (recommended)
-    if (process.env.RESEND_API_KEY) {
-      const resend = getResendClient();
-      
-      if (!resend) {
-        console.error('Resend client not initialized. Check your RESEND_API_KEY format.');
-        return;
-      }
-
-      const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-      
-      console.log(`Attempting to send email via Resend to ${to}...`);
-      // Wrap Resend API call with timeout (25 seconds to stay under Heroku's 30s limit)
-      const { data, error } = await withTimeout(
-        resend.emails.send({
-          from: fromEmail,
-          to: [to],
-          subject,
-          html,
-          text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML tags for text fallback
-        }),
-        25000,
-        'Email sending timed out'
-      );
-
-      if (error) {
-        console.error(`Resend API error sending email to ${to}:`, {
-          message: error.message,
-          name: error.name,
-          error
-        });
-        throw error; // Throw to prevent fallback to nodemailer
-      }
-
-      console.log(`Email sent successfully to ${to} via Resend. Email ID: ${data?.id}`);
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('RESEND_API_KEY is not configured. Skipping email send.');
       return;
     }
 
-    // Fallback to nodemailer ONLY if Resend is not configured (for backward compatibility)
-    // If RESEND_API_KEY is set, we should NOT fall back to nodemailer
-    if (!process.env.RESEND_API_KEY && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      console.log(`Resend not configured, falling back to nodemailer for ${to}...`);
-      const nodemailer = await import('nodemailer');
-      
-      const transporter = nodemailer.default.createTransport({
-        service: process.env.EMAIL_SERVICE || 'Outlook',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
+    const resend = getResendClient();
+    
+    if (!resend) {
+      console.error('Resend client not initialized. Check your RESEND_API_KEY format.');
+      return;
+    }
+
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    
+    console.log(`Attempting to send email via Resend to ${to}...`);
+    // Wrap Resend API call with timeout (25 seconds to stay under Heroku's 30s limit)
+    const { data, error } = await withTimeout(
+      resend.emails.send({
+        from: fromEmail,
+        to: [to],
+        subject,
+        html,
+        text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML tags for text fallback
+      }),
+      25000,
+      'Email sending timed out'
+    );
+
+    if (error) {
+      console.error(`Resend API error sending email to ${to}:`, {
+        message: error.message,
+        name: error.name,
+        error
       });
-
-      // Wrap nodemailer call with timeout (25 seconds to stay under Heroku's 30s limit)
-      await withTimeout(
-        transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to,
-          subject,
-          html,
-          text: text || html.replace(/<[^>]*>/g, ''),
-        }),
-        25000,
-        'Email sending timed out'
-      );
-
-      console.log(`Email sent successfully to ${to} via nodemailer (fallback)`);
-      return;
+      throw error;
     }
 
-    // No email service configured
-    console.warn('Email service not configured. Set RESEND_API_KEY (recommended) or EMAIL_USER/EMAIL_PASS. Skipping email send.');
+    console.log(`Email sent successfully to ${to} via Resend. Email ID: ${data?.id}`);
   } catch (error) {
     // Log error but don't throw - email failures shouldn't break the main flow
     console.error(`Error sending email to ${to}:`, error);
