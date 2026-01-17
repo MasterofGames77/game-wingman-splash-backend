@@ -33,10 +33,10 @@ async function testEmail() {
     console.log('✅ RESEND_API_KEY is configured');
     console.log(`   Key format: ${process.env.RESEND_API_KEY.substring(0, 10)}... (valid)`);
     console.log(`📧 From Email: ${process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev (default)'}\n`);
-    // Note: EMAIL_USER and EMAIL_PASS are no longer used (Resend is the only email service)
+    // Warn if nodemailer credentials are also set (might cause confusion)
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        console.log('⚠️  NOTE: EMAIL_USER and EMAIL_PASS are set but will be ignored.');
-        console.log('   Only Resend is used for sending emails.\n');
+        console.log('⚠️  WARNING: EMAIL_USER and EMAIL_PASS are also set.');
+        console.log('   Resend will be used (nodemailer will be ignored).\n');
     }
     // Get test email from command line argument or use a default
     const testEmail = process.argv[2] || process.env.TEST_EMAIL || 'test@example.com';

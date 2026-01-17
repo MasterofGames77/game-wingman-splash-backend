@@ -483,6 +483,66 @@ const SPLASH_PAGE_FORUMS = {
         title: "General Discussion",
         gameTitle: "The Last of Us",
     },
+    ghostoftsushima: {
+        forumId: "forum_1768423500122_hw8btrpo1",
+        title: "General Discussion",
+        gameTitle: "Ghost of Tsushima",
+    },
+    mariogolf: {
+        forumId: "forum_1768482000054_sy22lls0s",
+        title: "Help & Support",
+        gameTitle: "Mario Golf",
+    },
+    pokemonplatinum: {
+        forumId: "forum_1768482005429_gjjlp2bzc",
+        title: "Mods",
+        gameTitle: "Pokémon Platinum",
+    },
+    blueprince: {
+        forumId: "forum_1768485600092_034eu5e2f",
+        title: "Speedruns",
+        gameTitle: "Blue Prince",
+    },
+    bayonetta2: {
+        forumId: "forum_1768500000036_sovpszxi7",
+        title: "General Discussion",
+        gameTitle: "Bayonetta 2",
+    },
+    micrsoftflightgeneral: {
+        forumId: "forum_1768501800053_5g8c1p9cl",
+        title: "General Discussion",
+        gameTitle: "Microsoft Flight Simulator",
+    },
+    powerwashsimulator: {
+        forumId: "forum_1768568406120_gao24mfma",
+        title: "Help & Support",
+        gameTitle: "PowerWash Simulator",
+    },
+    chronotrigger: {
+        forumId: "forum_1768582800052_8kzrpkb1f",
+        title: "General Discussion",
+        gameTitle: "Chrono Trigger",
+    },
+    tetris99: {
+        forumId: "forum_1768586400050_nfaqekg2d",
+        title: "Gameplay",
+        gameTitle: "Tetris 99",
+    },
+    sonicunleashed: {
+        forumId: "forum_1768568400050_25zt7am3b",
+        title: "Gameplay",
+        gameTitle: "Sonic Unleashed",
+    },
+    wwe2k22: {
+        forumId: "forum_1768586405538_62pxgdcei",
+        title: "Gameplay",
+        gameTitle: "WWE 2K22",
+    },
+    splintercellchaoshelp: {
+        forumId: "forum_1768596300066_e4ns4f0ot",
+        title: "Help & Support",
+        gameTitle: "Tom Clancy's Splinter Cell: Chaos Theory",
+    }
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
 const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade3hero.forumId;

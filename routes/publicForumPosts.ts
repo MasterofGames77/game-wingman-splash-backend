@@ -481,6 +481,66 @@ const SPLASH_PAGE_FORUMS = {
     title: "General Discussion",
     gameTitle: "The Last of Us",
   },
+  ghostoftsushima: {
+    forumId: "forum_1768423500122_hw8btrpo1",
+    title: "General Discussion",
+    gameTitle: "Ghost of Tsushima",
+  },
+  mariogolf: {
+    forumId: "forum_1768482000054_sy22lls0s",
+    title: "Help & Support",
+    gameTitle: "Mario Golf",
+  },
+  pokemonplatinum: {
+    forumId: "forum_1768482005429_gjjlp2bzc",
+    title: "Mods",
+    gameTitle: "Pokémon Platinum",
+  },
+  blueprince: {
+    forumId: "forum_1768485600092_034eu5e2f",
+    title: "Speedruns",
+    gameTitle: "Blue Prince",
+  },
+  bayonetta2: {
+    forumId: "forum_1768500000036_sovpszxi7",
+    title: "General Discussion",
+    gameTitle: "Bayonetta 2",
+  },
+  micrsoftflightgeneral: {
+    forumId: "forum_1768501800053_5g8c1p9cl",
+    title: "General Discussion",
+    gameTitle: "Microsoft Flight Simulator",
+  },
+  powerwashsimulator: {
+    forumId: "forum_1768568406120_gao24mfma",
+    title: "Help & Support",
+    gameTitle: "PowerWash Simulator",
+  },
+  chronotrigger: {
+    forumId: "forum_1768582800052_8kzrpkb1f",
+    title: "General Discussion",
+    gameTitle: "Chrono Trigger",
+  },
+  tetris99: {
+    forumId: "forum_1768586400050_nfaqekg2d",
+    title: "Gameplay",
+    gameTitle: "Tetris 99",
+  },
+  sonicunleashed: {
+    forumId: "forum_1768568400050_25zt7am3b",
+    title: "Gameplay",
+    gameTitle: "Sonic Unleashed",
+  },
+  wwe2k22: {
+    forumId: "forum_1768586405538_62pxgdcei",
+    title: "Gameplay",
+    gameTitle: "WWE 2K22",
+  },
+  splintercellchaoshelp: {
+    forumId: "forum_1768596300066_e4ns4f0ot",
+    title: "Help & Support",
+    gameTitle: "Tom Clancy's Splinter Cell: Chaos Theory",
+  }
 };
 
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
@@ -576,23 +636,23 @@ function getForumId(req: Request): string {
 function getTimestampValue(post: any): number {
   const timestamp = post.timestamp || post.createdAt || post.date;
   if (!timestamp) return 0;
-  
+
   // If it's already a Date object, get time value
   if (timestamp instanceof Date) {
     return timestamp.getTime();
   }
-  
+
   // If it's a number, assume it's already milliseconds
   if (typeof timestamp === 'number') {
     return timestamp;
   }
-  
+
   // If it's a string, try to parse it as ISO date
   if (typeof timestamp === 'string') {
     const parsed = new Date(timestamp);
     return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
   }
-  
+
   return 0;
 }
 
@@ -616,18 +676,18 @@ interface PostWithForum {
 async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostWithForum[]> {
   const forumsCollection = db.collection('forums');
   const allPostsWithForum: PostWithForum[] = [];
-  
+
   // Get all forum IDs from SPLASH_PAGE_FORUMS
   const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
-  
+
   if (!forumIds || forumIds.length === 0) {
     console.warn('No forum IDs found in SPLASH_PAGE_FORUMS');
     return [];
   }
-  
+
   // Build query - filter by forumId and optionally by gameTitle
   const query: any = { forumId: { $in: forumIds } };
-  
+
   // Fetch all forums
   let forums;
   try {
@@ -649,12 +709,12 @@ async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostW
     console.error('Query:', JSON.stringify(query, null, 2));
     throw new Error(`Database query failed: ${errorMessage}`);
   }
-  
+
   if (!forums || forums.length === 0) {
     console.warn('No forums found matching query:', JSON.stringify(query, null, 2));
     return [];
   }
-  
+
   // Process each forum
   for (const forum of forums) {
     // Apply game title filter if provided (case-insensitive, trimmed)
@@ -665,20 +725,20 @@ async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostW
         continue;
       }
     }
-    
+
     // Find matching splash forum config for title format
     const splashForum = Object.values(SPLASH_PAGE_FORUMS).find(
       f => f.forumId === forum.forumId
     );
-    
-    const forumTitle = splashForum 
+
+    const forumTitle = splashForum
       ? `${splashForum.gameTitle} - ${splashForum.title}`
-      : (forum.gameTitle && forum.title 
-        ? `${forum.gameTitle} - ${forum.title}` 
+      : (forum.gameTitle && forum.title
+        ? `${forum.gameTitle} - ${forum.title}`
         : forum.title || 'Untitled Forum');
-    
+
     const posts = forum.posts || [];
-    
+
     // Add each post with forum metadata
     for (const post of posts) {
       allPostsWithForum.push({
@@ -690,7 +750,7 @@ async function getAllSplashPagePosts(db: any, gameTitle?: string): Promise<PostW
       });
     }
   }
-  
+
   return allPostsWithForum;
 }
 
@@ -722,25 +782,25 @@ function transformPost(post: any, userId?: string): any {
   if (userId && post.metadata && post.metadata.likedBy && Array.isArray(post.metadata.likedBy)) {
     isLiked = post.metadata.likedBy.includes(userId);
   }
-  
+
   // Extract attachments from metadata.attachments
   const attachments = (post.metadata && post.metadata.attachments && Array.isArray(post.metadata.attachments))
     ? post.metadata.attachments
     : [];
-  
+
   // Extract edited status and timestamp
   const isEdited = post.metadata && post.metadata.edited === true;
-  const editedAt = post.metadata && post.metadata.editedAt 
-    ? post.metadata.editedAt 
-    : (post.metadata && post.metadata.lastEdited 
-      ? post.metadata.lastEdited 
+  const editedAt = post.metadata && post.metadata.editedAt
+    ? post.metadata.editedAt
+    : (post.metadata && post.metadata.lastEdited
+      ? post.metadata.lastEdited
       : null);
-  
+
   // Extract parentPostId (for replies)
-  const parentPostId = post.parentPostId 
+  const parentPostId = post.parentPostId
     ? (post.parentPostId instanceof ObjectId ? post.parentPostId.toString() : String(post.parentPostId))
     : null;
-  
+
   return {
     postId: post._id?.toString() || null,
     author: post.username || post.author || post.postedBy || post.createdBy || 'Anonymous',
@@ -768,7 +828,7 @@ async function validateParentPost(db: any, parentPostId: string): Promise<{ foru
   }
 
   const forumsCollection = db.collection('forums');
-  
+
   // Search all splash page forums for the parent post
   const forumIds = Object.values(SPLASH_PAGE_FORUMS).map(f => f.forumId);
   const cursor = forumsCollection.find(
@@ -812,15 +872,15 @@ function buildReplyTree(postsWithForum: PostWithForum[], userId?: string): any[]
     }
     return transformed;
   });
-  
+
   // Separate top-level posts from replies
   const topLevelPosts: any[] = [];
   const repliesMap = new Map<string, any[]>(); // Map of parentPostId -> replies[]
-  
+
   for (const post of allPosts) {
     // Check if this is a reply (has parentPostId)
     const parentId = post.parentPostId;
-    
+
     if (parentId) {
       // This is a reply - add to replies map
       if (!repliesMap.has(parentId)) {
@@ -832,7 +892,7 @@ function buildReplyTree(postsWithForum: PostWithForum[], userId?: string): any[]
       topLevelPosts.push(post);
     }
   }
-  
+
   // Sort replies by timestamp (newest first)
   for (const [parentId, replies] of repliesMap.entries()) {
     replies.sort((a, b) => {
@@ -841,7 +901,7 @@ function buildReplyTree(postsWithForum: PostWithForum[], userId?: string): any[]
       return timeB - timeA; // Newest first
     });
   }
-  
+
   // Attach replies to their parent posts
   for (const post of topLevelPosts) {
     const postId = post.postId;
@@ -851,22 +911,22 @@ function buildReplyTree(postsWithForum: PostWithForum[], userId?: string): any[]
       post.replies = [];
     }
   }
-  
+
   // Sort top-level posts by timestamp (newest first)
   topLevelPosts.sort((a, b) => {
     const timeA = getTimestampValue({ timestamp: a.timestamp });
     const timeB = getTimestampValue({ timestamp: b.timestamp });
-    
+
     // If timestamps are equal, use post ID as tiebreaker for stable sort
     if (timeB === timeA) {
       const idA = a.postId || '';
       const idB = b.postId || '';
       return idB.localeCompare(idA); // Descending order for IDs
     }
-    
+
     return timeB - timeA; // Descending order (newest first)
   });
-  
+
   return topLevelPosts;
 }
 
@@ -980,12 +1040,12 @@ router.get('/public/forum-posts', cachePresets.forumPosts, addETag, async (req: 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
     console.error('Error details:', { message: errorMessage, stack: errorStack });
-    
+
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch forum posts',
       // Include error details in development only
-      ...(process.env.NODE_ENV === 'development' && { 
+      ...(process.env.NODE_ENV === 'development' && {
         error: errorMessage,
         stack: errorStack
       })
@@ -1063,7 +1123,7 @@ router.get('/public/forum-posts/available-games', cachePresets.staticContent, ad
     for (const forum of forums) {
       const gameTitle = forum.gameTitle || '';
       const posts = forum.posts || [];
-      
+
       // Count only top-level posts (posts without parentPostId)
       const topLevelPosts = posts.filter((post: any) => {
         return !post.parentPostId || post.parentPostId === null;
@@ -1225,15 +1285,15 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
       const attachments = (userPost.metadata && userPost.metadata.attachments && Array.isArray(userPost.metadata.attachments))
         ? userPost.metadata.attachments
         : [];
-      
+
       // Extract edited status and timestamp
       const isEdited = userPost.metadata && userPost.metadata.edited === true;
-      const editedAt = userPost.metadata && userPost.metadata.editedAt 
-        ? userPost.metadata.editedAt 
-        : (userPost.metadata && userPost.metadata.lastEdited 
-          ? userPost.metadata.lastEdited 
+      const editedAt = userPost.metadata && userPost.metadata.editedAt
+        ? userPost.metadata.editedAt
+        : (userPost.metadata && userPost.metadata.lastEdited
+          ? userPost.metadata.lastEdited
           : null);
-      
+
       return res.status(200).json({
         success: true,
         canPost: false,
@@ -1260,7 +1320,7 @@ router.get('/public/forum-posts/check-status', async (req: Request, res: Respons
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
     console.error('Error details:', { message: errorMessage, stack: errorStack });
-    
+
     return res.status(500).json({
       success: false,
       message: 'Failed to check post status',
@@ -1775,7 +1835,7 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
         }
 
         // Basic URL validation (matching main app)
-        const isValidUrl = 
+        const isValidUrl =
           attachment.url.startsWith('/uploads/forum-images/') ||
           attachment.url.startsWith('/uploads/automated-images/') ||
           attachment.url.startsWith('http://') ||
@@ -1873,7 +1933,7 @@ router.put('/public/forum-posts/:postId', async (req: Request, res: Response) =>
 
     // Use findOneAndUpdate with positional operator to update only the specific post
     const result = await forumsCollection.updateOne(
-      { 
+      {
         forumId: forumId,
         'posts._id': new ObjectId(String(postId))
       },
@@ -2070,7 +2130,7 @@ router.post('/public/forum-posts/:postId/like', async (req: Request, res: Respon
 
     // Check if user has already liked this post
     const hasLiked = Array.isArray(likedBy) && likedBy.includes(userId);
-    
+
     let newLikedBy: string[];
     let newLikesCount: number;
 
