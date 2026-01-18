@@ -5,19 +5,7 @@
  * Uses in-memory storage (can be extended to MongoDB for persistence).
  */
 
-interface QueuedAction {
-  id: string;
-  action: string; // 'waitlist-signup', 'forum-post', 'forum-update', 'forum-delete', 'forum-like'
-  endpoint: string; // Original endpoint path
-  method: string; // HTTP method
-  body: any; // Request body
-  headers?: Record<string, string>; // Request headers
-  timestamp: string; // When the action was queued
-  retries: number; // Number of retry attempts
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  userId?: string; // Optional user identifier
-  error?: string; // Error message if failed
-}
+import { QueuedAction } from '../types';
 
 class OfflineQueue {
   private queue: Map<string, QueuedAction> = new Map();
@@ -39,13 +27,13 @@ class OfflineQueue {
     if (action.action === 'waitlist-signup' && action.body?.email) {
       return `waitlist-${action.body.email.toLowerCase().trim()}`;
     }
-    
+
     // For forum posts, use userId + forumId + timestamp (within 5 seconds) as dedupe key
     if (action.action === 'forum-post' && action.body?.userId && action.body?.forumId) {
       const timeWindow = Math.floor(Date.parse(action.timestamp) / 5000); // 5 second window
       return `forum-post-${action.body.userId}-${action.body.forumId}-${timeWindow}`;
     }
-    
+
     // Default: use action + endpoint + body hash
     const bodyStr = JSON.stringify(action.body);
     return `${action.action}-${action.endpoint}-${bodyStr}`;
@@ -69,7 +57,7 @@ class OfflineQueue {
         .filter(item => item.status === 'pending')
         .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp))
         .slice(0, 10); // Remove 10 oldest
-      
+
       oldestPending.forEach(item => this.queue.delete(item.id));
     }
 
@@ -135,12 +123,32 @@ class OfflineQueue {
       return false;
     }
 
-    action.status = status;
-    if (error) {
-      action.error = error;
-    }
+    // Enforce max retries when attempting to process
     if (status === 'processing') {
+      if (action.retries >= this.maxRetries) {
+        action.status = 'failed';
+        action.error =
+          error ?? action.error ?? `Max retries (${this.maxRetries}) exceeded`;
+        this.queue.set(id, action);
+        return false;
+      }
+
+      action.status = 'processing';
       action.retries += 1;
+      if (error) {
+        action.error = error;
+      }
+    } else if (status === 'failed') {
+      // If there are retries remaining, keep it pending so it can be retried
+      if (error) {
+        action.error = error;
+      }
+      action.status = action.retries < this.maxRetries ? 'pending' : 'failed';
+    } else {
+      action.status = status;
+      if (error) {
+        action.error = error;
+      }
     }
 
     this.queue.set(id, action);

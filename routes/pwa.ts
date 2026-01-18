@@ -580,7 +580,18 @@ router.post('/api/pwa/queue/process', async (req: Request, res: Response) => {
     for (const action of actionsToProcess) {
       try {
         // Mark as processing
-        offlineQueue.updateActionStatus(action.id, 'processing');
+        const canProcess = offlineQueue.updateActionStatus(action.id, 'processing');
+        if (!canProcess) {
+          const current = offlineQueue.getActionById(action.id);
+          const errorMsg = current?.error || 'Max retries exceeded';
+          results.failed++;
+          results.errors.push({
+            queueId: action.id,
+            error: errorMsg
+          });
+          results.processed++;
+          continue;
+        }
 
         // Make the actual API call with timeout (25 seconds to match frontend and stay under Heroku's 30s limit)
         const response = await axios({
@@ -603,20 +614,22 @@ router.post('/api/pwa/queue/process', async (req: Request, res: Response) => {
           // Failed
           const errorMsg = response.data?.message || `HTTP ${response.status}`;
           offlineQueue.updateActionStatus(action.id, 'failed', errorMsg);
+          const current = offlineQueue.getActionById(action.id);
           results.failed++;
           results.errors.push({
             queueId: action.id,
-            error: errorMsg
+            error: current?.status === 'pending' ? `${errorMsg} (will retry)` : errorMsg
           });
         }
       } catch (error: any) {
         // Network or other error
         const errorMsg = error.message || 'Unknown error';
         offlineQueue.updateActionStatus(action.id, 'failed', errorMsg);
+        const current = offlineQueue.getActionById(action.id);
         results.failed++;
         results.errors.push({
           queueId: action.id,
-          error: errorMsg
+          error: current?.status === 'pending' ? `${errorMsg} (will retry)` : errorMsg
         });
       }
 

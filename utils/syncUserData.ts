@@ -32,6 +32,7 @@ const DEFAULT_PROGRESS = Object.freeze({
   rhythmMaster: 0,
   sandboxBuilder: 0,
   shootemUpSniper: 0,
+  rogueRenegade: 0,
   totalQuestions: 0,
   dailyExplorer: 0,
   speedrunner: 0,
@@ -59,7 +60,7 @@ export const syncUserToWingman = async (splashUser: IUser) => {
       if (!db) throw new Error('Failed to connect to Wingman database');
       wingmanDBConnection = db as unknown as Db;
     }
-    
+
     // Check pro access eligibility based on signup timestamp and position
     // Deadline: July 31, 2026 11:59:59 PM EDT (August 1, 2026 03:59:59.999 UTC)
     // If position is null (user already approved), we use the hasProAccess value
@@ -78,9 +79,9 @@ export const syncUserToWingman = async (splashUser: IUser) => {
       // User not yet approved - check eligibility based on position and deadline
       hasProAccess = checkProAccessEligibility(splashUser.userId, splashUser.position);
     }
-    
+
     console.log(`Syncing user to main application: email=${splashUser.email}, userId=${splashUser.userId}, hasProAccess=${hasProAccess}`);
-    
+
     // Use updateOne with upsert - ensure userId is always set correctly
     const result = await wingmanDBConnection.collection('users').updateOne(
       { email: splashUser.email },
@@ -98,12 +99,12 @@ export const syncUserToWingman = async (splashUser: IUser) => {
           progress: DEFAULT_PROGRESS
         }
       },
-      { 
+      {
         upsert: true,
         writeConcern: { w: 1 }
       }
     );
-    
+
     if (result.upsertedCount > 0) {
       console.log(`Successfully inserted new user ${splashUser.email} (${splashUser.userId}) into main application database`);
     } else if (result.matchedCount > 0) {
