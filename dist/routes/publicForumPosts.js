@@ -13,357 +13,437 @@ const cacheHeaders_1 = require("../utils/cacheHeaders");
 const router = (0, express_1.Router)();
 // Available forums to showcase on splash page
 const SPLASH_PAGE_FORUMS = {
+    supermario64wrspeedrun: {
+        forumId: "forum_1748480234269_p7s8uq6wy",
+        title: "Super Mario 64 World Record Speedrun",
+        gameTitle: "Super Mario 64",
+    },
+    sonicunleashedrecompiled: {
+        forumId: "forum_1749325232576_rj1ajsrwx",
+        title: "Sonic Unleashed Recompiled",
+        gameTitle: "Sonic Unleashed",
+    },
     xenoblade3hero: {
         forumId: "forum_1760222601584_k4k6xncld",
         title: "Favorite Hero in Xenoblade Chronicles 3",
         gameTitle: "Xenoblade Chronicles 3",
     },
-    eldenringlore: {
-        forumId: "forum_1763681917979_3qgttdvtr",
-        title: "Elden Ring Lore",
-        gameTitle: "Elden Ring",
-    },
-    apexlegends: {
-        forumId: "forum_1763236973075_bxzzix94i",
-        title: "General Discussion",
-        gameTitle: "Apex Legends",
-    },
-    celeste: {
+    celestegeneral: {
         forumId: "forum_1763160209962_x5ytzwz3a",
-        title: "Gameplay",
+        title: "General Discussion",
         gameTitle: "Celeste",
     },
-    JakandDaxter: {
+    jakanddaxtergeneral: {
         forumId: "forum_1763236935768_ih7j3ioea",
         title: "General Discussion",
         gameTitle: "Jak and Daxter: The Precursor Legacy",
     },
-    thelastofus: {
-        forumId: "forum_1765151756260_f3rhf8xjs",
-        title: "Gameplay",
-        gameTitle: "The Last of Us",
-    },
-    candycrush: {
-        forumId: "forum_1765150805927_hbtm3cuz6",
+    apexlegendsgeneral: {
+        forumId: "forum_1763236973075_bxzzix94i",
         title: "General Discussion",
-        gameTitle: "Candy Crush Saga",
+        gameTitle: "Apex Legends",
     },
-    twopointmuseum: {
-        forumId: "forum_1765218600020_esp7qcn89",
-        title: "General Discussion",
-        gameTitle: "Two Point Museum",
+    eldenringlore: {
+        forumId: "forum_1763681917979_3qgttdvtr",
+        title: "Elden Ring Lore Discussion",
+        gameTitle: "Elden Ring",
     },
-    persona5royal: {
-        forumId: "forum_1765151949973_n6p0x4jtl",
-        title: "Help & Support",
-        gameTitle: "Persona 5 Royal",
-    },
-    supermario64: {
-        forumId: "forum_1748480234269_p7s8uq6wy",
-        title: "Speedruns",
-        gameTitle: "Super Mario 64",
-    },
-    populationone: {
+    populationonemods: {
         forumId: "forum_1765116000030_1b7qw0ezu",
         title: "Mods",
         gameTitle: "Population: ONE",
     },
-    cyberpunk2077: {
+    sonicunleashedgeneral: {
+        forumId: "forum_1765132200023_qxcmrzg6a",
+        title: "General Discussion",
+        gameTitle: "Sonic Unleashed",
+    },
+    candycrushgeneral: {
+        forumId: "forum_1765150805927_hbtm3cuz6",
+        title: "General Discussion",
+        gameTitle: "Candy Crush Saga",
+    },
+    lastofusgameplay: {
+        forumId: "forum_1765151756260_f3rhf8xjs",
+        title: "Gameplay",
+        gameTitle: "The Last of Us",
+    },
+    persona5royalhelp: {
+        forumId: "forum_1765151949973_n6p0x4jtl",
+        title: "Help & Support",
+        gameTitle: "Persona 5: Royal",
+    },
+    xenoblade3general: {
+        forumId: "forum_1765202400028_3bebk1iwx",
+        title: "General Discussion",
+        gameTitle: "Xenoblade Chronicles 3",
+    },
+    twopointmuseumgeneral: {
+        forumId: "forum_1765218600020_esp7qcn89",
+        title: "General Discussion",
+        gameTitle: "Two Point Museum",
+    },
+    cyberpunk2077general: {
         forumId: "forum_1765226700037_obd4h66av",
         title: "General Discussion",
         gameTitle: "Cyberpunk 2077",
     },
-    guiltygearstrive: {
-        forumId: "forum_1765371600044_lyloigfr7",
-        title: "Speedruns",
-        gameTitle: "Guilty Gear Strive",
-    },
-    portal2: {
-        forumId: "forum_1765305000024_to7wisorn",
-        title: "General Discussion",
-        gameTitle: "Portal 2"
-    },
-    storyofseasons: {
-        forumId: "forum_1765303200021_nncbl3kw2",
-        title: "General Discussion",
-        gameTitle: "Story of Seasons",
-    },
-    fzerogx: {
+    fzerogxgameplay: {
         forumId: "forum_1765303202811_k6sdc8fsb",
         title: "Gameplay",
         gameTitle: "F-Zero GX",
     },
-    uncharted2: {
+    portal2general: {
+        forumId: "forum_1765305000024_to7wisorn",
+        title: "General Discussion",
+        gameTitle: "Portal 2",
+    },
+    guiltygearstrivespeedruns: {
+        forumId: "forum_1765371600044_lyloigfr7",
+        title: "Speedruns",
+        gameTitle: "Guilty Gear Strive",
+    },
+    uncharted2general: {
         forumId: "forum_1765371603574_xct3a4f68",
         title: "General Discussion",
         gameTitle: "Uncharted 2: Among Thieves",
     },
-    supermeatboy: {
+    supermeatboyspeedruns: {
         forumId: "forum_1765375200076_7k37mavqq",
         title: "Speedruns",
         gameTitle: "Super Meat Boy",
     },
-    destiny2: {
+    destiny2gameplay: {
         forumId: "forum_1765389600024_y0bkmus9y",
         title: "Gameplay",
         gameTitle: "Destiny 2",
     },
-    raymanlegends: {
+    raymanlegendsgameplay: {
         forumId: "forum_1765461600041_qmz75l03o",
         title: "Gameplay",
         gameTitle: "Rayman Legends",
     },
-    discoelysium: {
+    celestegameplay: {
+        forumId: "forum_1765476000035_pb3m35j0b",
+        title: "Gameplay",
+        gameTitle: "Celeste",
+    },
+    discoelysiumgeneral: {
         forumId: "forum_1765485900026_3t7qd4dkf",
         title: "General Discussion",
         gameTitle: "Disco Elysium",
     },
-    theroom: {
+    eldenringspeedruns: {
+        forumId: "forum_1765544400244_zwot700uo",
+        title: "Speedruns",
+        gameTitle: "Elden Ring",
+    },
+    theroomspeedruns: {
         forumId: "forum_1765544402914_x5sx5m1im",
         title: "Speedruns",
-        gameTitle: "The Room (Game)"
+        gameTitle: "The Room (Game)",
     },
-    titanfall2: {
+    titanfall2help: {
         forumId: "forum_1765562403375_1oyycofyl",
         title: "Help & Support",
         gameTitle: "Titanfall 2",
     },
-    marvelsspiderman: {
+    marvelsspidermanspeedruns: {
         forumId: "forum_1765564200033_2i7zz1z44",
         title: "Speedruns",
         gameTitle: "Marvel's Spider-Man",
     },
-    reddeadredemption2: {
+    lastofusgeneral: {
+        forumId: "forum_1765572300021_ufrafordh",
+        title: "General Discussion",
+        gameTitle: "The Last of Us",
+    },
+    reddeadredemption2general: {
         forumId: "forum_1765630800043_poiuwxl56",
         title: "General Discussion",
         gameTitle: "Red Dead Redemption 2",
     },
-    vampirethemasquerade: {
+    vampiremasqueradegameplay: {
         forumId: "forum_1765630803081_dohwiqa7x",
         title: "Gameplay",
-        gameTitle: "Vampire: The Masquerade - Bloodhunt",
+        gameTitle: "Vampire: The Masquerade – Bloodhunt",
     },
-    assassinscreedvalhalla: {
-        forumId: "forum_1765658700086_l98fb5asd",
-        title: "General Discussion",
-        gameTitle: "Assassin's Creed Valhalla",
-    },
-    dragonballfighterz: {
-        forumId: "forum_1765717200148_kdsx0mujh",
-        title: "Gameplay",
-        gameTitle: "Dragon Ball FighterZ",
-    },
-    crashbandicootnsanetrilogy: {
-        forumId: "forum_1765803600047_cr88cm4rf",
-        title: "Gameplay",
-        gameTitle: "Crash Bandicoot: N. Sane Trilogy",
-    },
-    thecrewmotorfest: {
-        forumId: "forum_1765735200026_uk3s5hnlc",
-        title: "General Discussion",
-        gameTitle: "The Crew: Motorfest",
-    },
-    terraria: {
-        forumId: "forum_1765821600040_nl5k2i19w",
-        title: "Gameplay",
-        gameTitle: "Terraria",
-    },
-    harvestmoon: {
-        forumId: "forum_1765745100037_pv6lq4ewh",
-        title: "Gameplay",
-        gameTitle: "Harvest Moon",
-    },
-    bejeweled: {
-        forumId: "forum_1765908000031_f1egw2poo",
-        title: "Gameplay",
-        gameTitle: "Bejeweled",
-    },
-    returnoftheobradinn: {
-        forumId: "forum_1765823400030_pt19q5zpm",
-        title: "Mods",
-        gameTitle: "Return of the Obra Dinn",
-    },
-    wipeoutomegacollection: {
-        forumId: "forum_1765908002702_f8d25potu",
-        title: "Gameplay",
-        gameTitle: "Wipeout Omega Collection",
-    },
-    theelderscrollsv: {
-        forumId: "forum_1765909800276_ktm0b2ks2",
-        title: "Gameplay",
-        gameTitle: "The Elder Scrolls V: Skyrim",
-    },
-    supermarioodyssey: {
-        forumId: "forum_1765976400041_cr63gw075",
-        title: "Gameplay",
-        gameTitle: "Super Mario Odyssey",
-    },
-    starwarsjedisurvivor: {
-        forumId: "forum_1766062800042_ovfsrxizx",
-        title: "General Discussion",
-        gameTitle: "Star Wars Jedi: Survivor",
-    },
-    zeldabreathofthewild: {
-        forumId: "forum_1766090700026_778j09i7v",
-        title: "Mods",
-        gameTitle: "The Legend of Zelda: Breath of the Wild",
-    },
-    planetcoaster: {
-        forumId: "forum_1766098803286_jiu9mkja5",
-        title: "General Discussion",
-        gameTitle: "Planet Coaster",
-    },
-    thewitness: {
-        forumId: "forum_1766149202879_gcll70wi5",
-        title: "General Discussion",
-        gameTitle: "The Witness (Game)",
-    },
-    thewitcher3: {
-        forumId: "forum_1766163600031_kq36x5pil",
-        title: "General Discussion",
-        gameTitle: "The Witcher 3: Wild Hunt",
-    },
-    babaisyou: {
-        forumId: "forum_1766167202278_er25tt8gz",
-        title: "General Discussion",
-        gameTitle: "Baba is You",
-    },
-    tetris: {
-        forumId: "forum_1766195100370_hefugjhtk",
-        title: "General Discussion",
-        gameTitle: "Tetris",
-    },
-    overwatch: {
-        forumId: "forum_1766235600039_o22ln5r7x",
-        title: "Gameplay",
-        gameTitle: "Overwatch",
-    },
-    pubgbattlegrounds: {
-        forumId: "forum_1766322000048_okfsg7gfk",
-        title: "Help & Support",
-        gameTitle: "PUBG: Battlegrounds",
-    },
-    pokemonlegendsarceus: {
-        forumId: "forum_1766325600027_8drfyhhmo",
-        title: "Mods",
-        gameTitle: "Pokémon Legends: Arceus",
-    },
-    citiesskylines: {
-        forumId: "forum_1766336400028_h7cd9mjg9",
-        title: "Mods",
-        gameTitle: "Cities: Skylines",
-    },
-    donkeykongcountry: {
-        forumId: "forum_1766349900040_krsoonmf2",
-        title: "Speedruns",
-        gameTitle: "Donkey Kong Country",
-    },
-    baldursgate3: {
-        forumId: "forum_1766408403807_uzsqwynq7",
-        title: "Mods",
-        gameTitle: "Baldur's Gate 3",
-    },
-    jakanddaxter: {
+    jakanddaxtergameplay: {
         forumId: "forum_1765650600021_5qpodadw1",
         title: "Gameplay",
         gameTitle: "Jak and Daxter: The Precursor Legacy",
     },
-    jakprecursorlegacy: {
+    assassinscreedvalhallageneral: {
+        forumId: "forum_1765658700086_l98fb5asd",
+        title: "General Discussion",
+        gameTitle: "Assassin's Creed Valhalla",
+    },
+    dragonballfighterzgameplay: {
+        forumId: "forum_1765717200148_kdsx0mujh",
+        title: "Gameplay",
+        gameTitle: "Dragon Ball FighterZ",
+    },
+    crashnsanegeneral: {
+        forumId: "forum_1765720800037_umuwk5c97",
+        title: "General Discussion",
+        gameTitle: "Crash Bandicoot N-Sane Trilogy",
+    },
+    jakanddaxterspeedruns: {
         forumId: "forum_1765731600025_9qazdyc4y",
         title: "Speedruns",
         gameTitle: "Jak and Daxter: The Precursor Legacy",
     },
-    discoelysiumgameplay: {
-        forumId: "forum_1765904400033_d1lmg3zfc",
-        title: "Gameplay",
-        gameTitle: "Disco Elysium",
+    thecrewmotorfestgeneral: {
+        forumId: "forum_1765735200026_uk3s5hnlc",
+        title: "General Discussion",
+        gameTitle: "The Crew Motorfest",
     },
-    elderscrollsv: {
+    harvestmoongameplay: {
+        forumId: "forum_1765745100037_pv6lq4ewh",
+        title: "Gameplay",
+        gameTitle: "Harvest Moon",
+    },
+    crashbandicootnsanetrilogygameplay: {
+        forumId: "forum_1765803600047_cr88cm4rf",
+        title: "Gameplay",
+        gameTitle: "Crash Bandicoot N-Sane Trilogy",
+    },
+    terrariagameplay: {
+        forumId: "forum_1765821600040_nl5k2i19w",
+        title: "Gameplay",
+        gameTitle: "Terraria",
+    },
+    vampiremasqueradegeneral: {
+        forumId: "forum_1765821603203_nttgvh862",
+        title: "General Discussion",
+        gameTitle: "Vampire: The Masquerade – Bloodhunt",
+    },
+    returnoftheobradinnmods: {
+        forumId: "forum_1765823400030_pt19q5zpm",
+        title: "Mods",
+        gameTitle: "Return of the Obra Dinn",
+    },
+    bejeweledgameplay: {
+        forumId: "forum_1765908000031_f1egw2poo",
+        title: "Gameplay",
+        gameTitle: "Bejeweled",
+    },
+    wipeoutomegacollectiongameplay: {
+        forumId: "forum_1765908002702_f8d25potu",
+        title: "Gameplay",
+        gameTitle: "Wipeout Omega Collection",
+    },
+    theelderscrollsvgameplay: {
+        forumId: "forum_1765909800276_ktm0b2ks2",
+        title: "Gameplay",
+        gameTitle: "The Elder Scrolls V: Skyrim",
+    },
+    supermarioodysseygameplay: {
+        forumId: "forum_1765976400041_cr63gw075",
+        title: "Gameplay",
+        gameTitle: "Super Mario Odyssey",
+    },
+    storyofseasonshelp: {
+        forumId: "forum_1765976403790_8to0xuhes",
+        title: "Help & Support",
+        gameTitle: "Story of Seasons",
+    },
+    theelderscrollsvgeneral: {
         forumId: "forum_1765980000034_7zjijo17s",
         title: "General Discussion",
         gameTitle: "The Elder Scrolls V: Skyrim",
     },
-    EldenRinghelp: {
+    portal2gameplay: {
+        forumId: "forum_1765990800028_f7tra7i2j",
+        title: "Gameplay",
+        gameTitle: "Portal 2",
+    },
+    starwarsjedisurvivorgeneral: {
+        forumId: "forum_1766077200027_hn2su1i2w",
+        title: "General Discussion",
+        gameTitle: "Star Wars Jedi: Survivor",
+    },
+    marvelsspidermangeneral: {
+        forumId: "forum_1766080800046_a8gut80rh",
+        title: "General Discussion",
+        gameTitle: "Marvel's Spider-Man",
+    },
+    xenoblade3mods: {
+        forumId: "forum_1766082600086_bk0tjrsr3",
+        title: "Mods",
+        gameTitle: "Xenoblade Chronicles 3",
+    },
+    zeldabreathofthewildmods: {
+        forumId: "forum_1766090700026_778j09i7v",
+        title: "Mods",
+        gameTitle: "The Legend of Zelda: Breath of the Wild",
+    },
+    planetcoastergeneral: {
+        forumId: "forum_1766098803286_jiu9mkja5",
+        title: "General Discussion",
+        gameTitle: "Planet Coaster",
+    },
+    uncharted2gameplay: {
+        forumId: "forum_1766149200037_n543ogqon",
+        title: "General Discussion",
+        gameTitle: "Uncharted 2: Among Thieves",
+    },
+    thewitnessgeneral: {
+        forumId: "forum_1766149202879_gcll70wi5",
+        title: "General Discussion",
+        gameTitle: "The Witness (Game)",
+    },
+    thewitcher3general: {
+        forumId: "forum_1766163600031_kq36x5pil",
+        title: "General Discussion",
+        gameTitle: "The Witcher 3: Wild Hunt",
+    },
+    babaisyougeneral: {
+        forumId: "forum_1766167202278_er25tt8gz",
+        title: "General Discussion",
+        gameTitle: "Baba is You",
+    },
+    tetrisgeneral: {
+        forumId: "forum_1766195100370_hefugjhtk",
+        title: "General Discussion",
+        gameTitle: "Tetris",
+    },
+    overwatchgameplay: {
+        forumId: "forum_1766235600039_o22ln5r7x",
+        title: "Gameplay",
+        gameTitle: "Overwatch",
+    },
+    eldenringhelp: {
         forumId: "forum_1766235604168_7wov1qikl",
         title: "Help & Support",
         gameTitle: "Elden Ring",
     },
-    phasmophobia: {
+    portal2mods: {
+        forumId: "forum_1766250000027_xkn1y0y0d",
+        title: "Mods",
+        gameTitle: "Portal 2",
+    },
+    assassinscreedvalhallagameplay: {
+        forumId: "forum_1766255400033_bg2wqb3j9",
+        title: "Gameplay",
+        gameTitle: "Assassin's Creed Valhalla",
+    },
+    pubgbattlegroundshelp: {
+        forumId: "forum_1766322000048_okfsg7gfk",
+        title: "Help & Support",
+        gameTitle: "PUBG: Battlegrounds",
+    },
+    pokemonlegendsarceusmods: {
+        forumId: "forum_1766325600027_8drfyhhmo",
+        title: "Mods",
+        gameTitle: "Pokémon Legends: Arceus",
+    },
+    citiesskylinesmods: {
+        forumId: "forum_1766336400028_h7cd9mjg9",
+        title: "Mods",
+        gameTitle: "Cities: Skylines",
+    },
+    thewitnessgameplay: {
+        forumId: "forum_1766340000027_c52z0spey",
+        title: "Gameplay",
+        gameTitle: "The Witness (Game)",
+    },
+    donkeykongcountryspeedruns: {
+        forumId: "forum_1766349900040_krsoonmf2",
+        title: "Speedruns",
+        gameTitle: "Donkey Kong Country",
+    },
+    crashnsanetrilogyhelp: {
+        forumId: "forum_1766408400041_m5ek27nmw",
+        title: "Help & Support",
+        gameTitle: "Crash Bandicoot N-Sane Trilogy",
+    },
+    baldursgate3mods: {
+        forumId: "forum_1766408403807_uzsqwynq7",
+        title: "Mods",
+        gameTitle: "Baldur's Gate 3",
+    },
+    thecrewmotorfestmods: {
+        forumId: "forum_1766426400044_qcycehgw2",
+        title: "Mods",
+        gameTitle: "The Crew Motorfest",
+    },
+    supermarioodysseygeneral: {
+        forumId: "forum_1766498400033_fku88hylt",
+        title: "General Discussion",
+        gameTitle: "Super Mario Odyssey",
+    },
+    phasmophobiaspeedruns: {
         forumId: "forum_1767732300044_ppdbsos92",
         title: "Speedruns",
         gameTitle: "Phasmophobia",
     },
-    deadspace: {
+    uncharted2gameplay2: {
+        forumId: "forum_1767790804028_jsbmpving",
+        title: "Gameplay",
+        gameTitle: "Uncharted 2: Among Thieves",
+    },
+    deadspacegameplay: {
         forumId: "forum_1767794400045_3ht7o54pd",
         title: "Gameplay",
         gameTitle: "Dead Space",
     },
-    tenchustealthassassins: {
+    tenchustealthassassinsspeedruns: {
         forumId: "forum_1767805200039_vf41djbef",
         title: "Speedruns",
         gameTitle: "Tenchu: Stealth Assassins",
     },
-    xenoblade3speed: {
+    xenoblade3speedruns: {
         forumId: "forum_1767808800042_rngkyyegz",
         title: "Speedruns",
         gameTitle: "Xenoblade Chronicles 3",
     },
-    castlevaniasymphonyofnight: {
+    castlevaniasymphonyofnightspeedruns: {
         forumId: "forum_1767808804987_jyn9u3qpz",
         title: "Speedruns",
         gameTitle: "Castlevania: Symphony of the Night",
     },
-    sekiro: {
+    sekirogeneral: {
         forumId: "forum_1767810600038_hfzqnmujn",
         title: "General Discussion",
         gameTitle: "Sekiro: Shadows Die Twice",
     },
-    markoftheninja: {
+    markoftheninjaspeedruns: {
         forumId: "forum_1767818700047_dugeftjyb",
         title: "Speedruns",
         gameTitle: "Mark of the Ninja",
     },
-    tomclancysplintercell: {
+    tomclancysplintercellspeedruns: {
         forumId: "forum_1767877200048_l21a86kqx",
         title: "Speedruns",
         gameTitle: "Tom Clancy's Splinter Cell: Chaos Theory",
     },
-    finalfantasyvii: {
+    finalfantasyviigameplay: {
         forumId: "forum_1767877204692_romlj6pwn",
         title: "Gameplay",
         gameTitle: "Final Fantasy VII",
     },
-    wiisports: {
+    wiisportsgeneral: {
         forumId: "forum_1767895200061_x9m814h04",
         title: "General Discussion",
         gameTitle: "Wii Sports",
     },
-    valorant: {
+    valorantgameplay: {
         forumId: "forum_1767895208558_4hag44uev",
         title: "Gameplay",
         gameTitle: "Valorant",
     },
-    honorofkings: {
+    honorofkingsgeneral: {
         forumId: "forum_1767963600077_5e6nv51u8",
         title: "General Discussion",
         gameTitle: "Honor of Kings",
     },
-    astrobot: {
-        forumId: "forum_1767967200049_r3bdflu7l",
-        title: "Gameplay",
-        gameTitle: "Astro Bot",
-    },
-    hitmanworldofassassination: {
+    hitman3general: {
         forumId: "forum_1767981603240_n37zdvk52",
         title: "General Discussion",
-        gameTitle: "Hitman: World of Assassination",
+        gameTitle: "Hitman 3",
     },
-    stardewvalley: {
-        forumId: "forum_1768050000163_ymv9ip7rj",
-        title: "General Discussion",
-        gameTitle: "Stardew Valley",
-    },
-    jedisurvivorgameplay: {
+    starwarsjedisurvivorgameplay: {
         forumId: "forum_1767983400036_dfavztjaz",
         title: "Gameplay",
         gameTitle: "Star Wars Jedi: Survivor",
@@ -373,52 +453,72 @@ const SPLASH_PAGE_FORUMS = {
         title: "General Discussion",
         gameTitle: "Harvest Moon",
     },
-    raft: {
+    stardewvalleygeneral: {
+        forumId: "forum_1768050000163_ymv9ip7rj",
+        title: "General Discussion",
+        gameTitle: "Stardew Valley",
+    },
+    raftgeneral: {
         forumId: "forum_1768050003238_jx6qnoim5",
         title: "General Discussion",
         gameTitle: "Raft",
     },
-    dustelysiantail: {
+    dustelysiantailgameplay: {
         forumId: "forum_1768064400046_iy5t0q4a5",
         title: "Gameplay",
         gameTitle: "Dust: An Elysian Tail",
     },
-    shovelknight: {
+    fzerogxgeneral: {
+        forumId: "forum_1768068005337_s7degfsob",
+        title: "General Discussion",
+        gameTitle: "F-Zero GX",
+    },
+    donkeykongcountryhelp: {
+        forumId: "forum_1768069800040_qbtf1negk",
+        title: "Help & Support",
+        gameTitle: "Donkey Kong Country",
+    },
+    shovelknightgameplay: {
         forumId: "forum_1768077900037_i6eg9zinu",
         title: "Gameplay",
         gameTitle: "Shovel Knight",
     },
-    nierautomata: {
+    nierautomatagameplay: {
         forumId: "forum_1768136400054_bchcn3fef",
         title: "Gameplay",
         gameTitle: "NieR: Automata",
     },
-    supersmashbrosultimate: {
+    citiesskylinesgeneral: {
+        forumId: "forum_1768150800037_20ewslsb8",
+        title: "General Discussion",
+        gameTitle: "Cities: Skylines",
+    },
+    supersmashbrosultimategeneral: {
         forumId: "forum_1768154400039_dalgdkhwl",
         title: "General Discussion",
         gameTitle: "Super Smash Bros. Ultimate",
     },
-    theif2: {
+    thief2gameplay: {
         forumId: "forum_1768154403477_g67h5xb7w",
-        title: "Gamplay",
-        gameTitle: "Theif 2: The Metal Age",
+        title: "Gameplay",
+        gameTitle: "Thief 2: The Metal Age",
     },
-    cavestoryplus: {
+    cavestoryplusgeneral: {
         forumId: "forum_1768156200117_rt55ompcd",
         title: "General Discussion",
         gameTitle: "Cave Story+",
     },
-    axiomverge: {
+    axiomvergehelp: {
         forumId: "forum_1768164300036_mloapl9nm",
         title: "Help & Support",
         gameTitle: "Axiom Verge",
     },
-    nhl14: {
+    nhl14general: {
         forumId: "forum_1768222800057_9f4owg2na",
         title: "General Discussion",
         gameTitle: "NHL 14",
     },
-    microsoftflightsimulator: {
+    microsoftflightsimulatorhelp: {
         forumId: "forum_1768222803904_3ngc4l2s9",
         title: "Help & Support",
         gameTitle: "Microsoft Flight Simulator",
@@ -428,121 +528,321 @@ const SPLASH_PAGE_FORUMS = {
         title: "Help & Support",
         gameTitle: "Dishonored 2",
     },
-    finalfantasyviispeed: {
+    finalfantasyviispeedruns: {
         forumId: "forum_1768240806140_d1dm8d210",
         title: "Speedruns",
         gameTitle: "Final Fantasy VII",
     },
-    alienisolation: {
+    alienisolationgameplay: {
         forumId: "forum_1768242600042_u69ctqz9h",
         title: "Gameplay",
-        gameTitle: "Alien: Isolation",
+        gameTitle: "Alien Isolation",
     },
-    donkeykongcountryhelp: {
-        forumId: "forum_1768069800040_qbtf1negk",
-        title: "Help & Support",
-        gameTitle: "Donkey Kong Country",
-    },
-    fzerogxgeneral: {
-        forumId: "forum_1768068005337_s7degfsob",
-        title: "General Discussion",
-        gameTitle: "F-Zero GX",
-    },
-    supermarioodysseygeneral: {
-        forumId: "forum_1766498400033_fku88hylt",
-        title: "General Discussion",
-        gameTitle: "Super Mario Odyssey",
-    },
-    crewmotorfestmods: {
-        forumId: "forum_1766426400044_qcycehgw2",
-        title: "Mods",
-        gameTitle: "The Crew: Motorfest",
-    },
-    storyofseasonshelp: {
-        forumId: "forum_1765976403790_8to0xuhes",
-        title: "Help & Support",
-        gameTitle: "Story of Seasons",
-    },
-    portal2mods: {
-        forumId: "forum_1766250000027_xkn1y0y0d",
-        title: "Mods",
+    portal2speedruns: {
+        forumId: "forum_1768250700095_7008m11cc",
+        title: "Speedruns",
         gameTitle: "Portal 2",
     },
-    crashnsanetrilogyhelp: {
-        forumId: "forum_1766408400041_m5ek27nmw",
-        title: "Help & Support",
-        gameTitle: "Crash Bandicoot: N. Sane Trilogy",
-    },
-    acvalhallagameplay: {
-        forumId: "forum_1766255400033_bg2wqb3j9",
-        title: "Gameplay",
-        gameTitle: "Assassin's Creed Valhalla",
-    },
-    thelastofusgeneral: {
-        forumId: "forum_1765572300021_ufrafordh",
+    banjokazooiegeneral: {
+        forumId: "forum_1768309200127_3t8lo9tst",
         title: "General Discussion",
-        gameTitle: "The Last of Us",
+        gameTitle: "Banjo Kazooie",
     },
-    ghostoftsushima: {
+    hotshotsgolf3general: {
+        forumId: "forum_1768309206454_clhwi9pup",
+        title: "General Discussion",
+        gameTitle: "Hot Shots Golf 3",
+    },
+    tomclancysplintercellgameplay: {
+        forumId: "forum_1768312800043_05p5dlq3f",
+        title: "Gameplay",
+        gameTitle: "Tom Clancy's Splinter Cell: Chaos Theory",
+    },
+    pubgbattlegroundsgameplay: {
+        forumId: "forum_1768327204006_039lcvhc0",
+        title: "Gameplay",
+        gameTitle: "PUBG: Battlegrounds",
+    },
+    tetrisspeedruns: {
+        forumId: "forum_1768329000041_k595q0a6q",
+        title: "Speedruns",
+        gameTitle: "Tetris",
+    },
+    dustelysiantailgeneral: {
+        forumId: "forum_1768337100050_27iq4yqyv",
+        title: "General Discussion",
+        gameTitle: "Dust: An Elysian Tail",
+    },
+    wipeoutomegacollectionhelp: {
+        forumId: "forum_1768395600044_40opghlys",
+        title: "Help & Support",
+        gameTitle: "Wipeout Omega Collection",
+    },
+    diddykongracinggeneral: {
+        forumId: "forum_1768395604876_8qd90u6q1",
+        title: "General Discussion",
+        gameTitle: "Diddy Kong Racing",
+    },
+    astrobotgeneral: {
+        forumId: "forum_1768410000038_x1a2cnes6",
+        title: "General Discussion",
+        gameTitle: "Astro Bot",
+    },
+    raymanlegendsspeedruns: {
+        forumId: "forum_1768413600053_fo1d1cmd5",
+        title: "Speedruns",
+        gameTitle: "Rayman Legends",
+    },
+    pokemonlegendsarceusgameplay: {
+        forumId: "forum_1768413606836_f7s54r104",
+        title: "Gameplay",
+        gameTitle: "Pokémon Legends: Arceus",
+    },
+    ghostoftsushimageneral: {
         forumId: "forum_1768423500122_hw8btrpo1",
         title: "General Discussion",
         gameTitle: "Ghost of Tsushima",
     },
-    mariogolf: {
+    mariogolfhelp: {
         forumId: "forum_1768482000054_sy22lls0s",
         title: "Help & Support",
         gameTitle: "Mario Golf",
     },
-    pokemonplatinum: {
+    pokemonplatinummods: {
         forumId: "forum_1768482005429_gjjlp2bzc",
         title: "Mods",
         gameTitle: "Pokémon Platinum",
     },
-    blueprince: {
-        forumId: "forum_1768485600092_034eu5e2f",
-        title: "Speedruns",
-        gameTitle: "Blue Prince",
-    },
-    bayonetta2: {
+    bayonetta2general: {
         forumId: "forum_1768500000036_sovpszxi7",
         title: "General Discussion",
         gameTitle: "Bayonetta 2",
     },
-    micrsoftflightgeneral: {
+    microsoftflightsimulatorgeneral: {
         forumId: "forum_1768501800053_5g8c1p9cl",
         title: "General Discussion",
         gameTitle: "Microsoft Flight Simulator",
     },
-    powerwashsimulator: {
+    powerwashsimulatorhelp: {
         forumId: "forum_1768568406120_gao24mfma",
         title: "Help & Support",
         gameTitle: "PowerWash Simulator",
     },
-    chronotrigger: {
+    chronotriggergeneral: {
         forumId: "forum_1768582800052_8kzrpkb1f",
         title: "General Discussion",
         gameTitle: "Chrono Trigger",
     },
-    tetris99: {
+    tetris99gameplay: {
         forumId: "forum_1768586400050_nfaqekg2d",
         title: "Gameplay",
         gameTitle: "Tetris 99",
     },
-    sonicunleashed: {
+    sonicunleashedgameplay: {
         forumId: "forum_1768568400050_25zt7am3b",
         title: "Gameplay",
         gameTitle: "Sonic Unleashed",
     },
-    wwe2k22: {
+    wwe2k22gameplay: {
         forumId: "forum_1768586405538_62pxgdcei",
         title: "Gameplay",
         gameTitle: "WWE 2K22",
     },
-    splintercellchaoshelp: {
+    tomclancysplintercellhelp: {
         forumId: "forum_1768596300066_e4ns4f0ot",
         title: "Help & Support",
         gameTitle: "Tom Clancy's Splinter Cell: Chaos Theory",
-    }
+    },
+    sonicallstarsracingtransformedgeneral: {
+        forumId: "forum_1768654800053_n5vzk4iqf",
+        title: "General Discussion",
+        gameTitle: "Sonic & All-Stars Racing Transformed",
+    },
+    pokemonlegendsarceushelp: {
+        forumId: "forum_1768654805457_shs24cxla",
+        title: "Help & Support",
+        gameTitle: "Pokémon Legends: Arceus",
+    },
+    planetcoasterspeedruns: {
+        forumId: "forum_1768658400043_ac07wypgc",
+        title: "Speedruns",
+        gameTitle: "Planet Coaster",
+    },
+    hollowknightgeneral: {
+        forumId: "forum_1768672800039_gespebnxa",
+        title: "General Discussion",
+        gameTitle: "Hollow Knight",
+    },
+    mlbtheshow20gameplay: {
+        forumId: "forum_1768672804786_80xyvr442",
+        title: "Gameplay",
+        gameTitle: "MLB The Show 20",
+    },
+    markoftheninjahelp: {
+        forumId: "forum_1768674600032_et2ah0lbe",
+        title: "Help & Support",
+        gameTitle: "Mark of the Ninja",
+    },
+    planetcoasterhelp: {
+        forumId: "forum_1768682700053_3mwrcf938",
+        title: "Help & Support",
+        gameTitle: "Planet Coaster",
+    },
+    dragonballfighterzgeneral: {
+        forumId: "forum_1768741200065_c3tg5lyls",
+        title: "General Discussion",
+        gameTitle: "Dragon Ball FighterZ",
+    },
+    needforspeedmods: {
+        forumId: "forum_1768759200055_ajedb5ptl",
+        title: "Mods",
+        gameTitle: "Need for Speed",
+    },
+    alienisolationgeneral: {
+        forumId: "forum_1768759204509_419hgywm2",
+        title: "General Discussion",
+        gameTitle: "Alien Isolation",
+    },
+    dishonored2gameplay: {
+        forumId: "forum_1768769100056_jnb8cmh7q",
+        title: "Gameplay",
+        gameTitle: "Dishonored 2",
+    },
+    blueprincegameplay: {
+        forumId: "forum_1768827600040_gsmnaijx5",
+        title: "Gameplay",
+        gameTitle: "Blue Prince",
+    },
+    sonicmaniageneral: {
+        forumId: "forum_1768827615491_p85qpxc9w",
+        title: "General Discussion",
+        gameTitle: "Sonic Mania",
+    },
+    donkeykongbananzaspeedruns: {
+        forumId: "forum_1768831200056_l9ti1myon",
+        title: "Speedruns",
+        gameTitle: "Donkey Kong Bananza",
+    },
+    dragonballfighterzmods: {
+        forumId: "forum_1768845600039_7dbrjjf88",
+        title: "Mods",
+        gameTitle: "Dragon Ball FighterZ",
+    },
+    castlevaniasymphonyofnightgeneral: {
+        forumId: "forum_1768845604500_divlbfx60",
+        title: "General Discussion",
+        gameTitle: "Castlevania: Symphony of the Night",
+    },
+    supermeatboyhelp: {
+        forumId: "forum_1768847400032_juovyznsc",
+        title: "Help & Support",
+        gameTitle: "Super Meat Boy",
+    },
+    markoftheninjagameplay: {
+        forumId: "forum_1768855500047_n811b7e7x",
+        title: "Gameplay",
+        gameTitle: "Mark of the Ninja",
+    },
+    honorofkingshelp: {
+        forumId: "forum_1768914000196_v6an9kbie",
+        title: "Help & Support",
+        gameTitle: "Honor of Kings",
+    },
+    dishonored2speedruns: {
+        forumId: "forum_1768917600050_7k9hcrxn9",
+        title: "Speedruns",
+        gameTitle: "Dishonored 2",
+    },
+    untildawngameplay: {
+        forumId: "forum_1768928400037_q0u4hf3uz",
+        title: "Gameplay",
+        gameTitle: "Until Dawn",
+    },
+    sonicmaniahelp: {
+        forumId: "forum_1768932000047_gfd9k7dtv",
+        title: "Help & Support",
+        gameTitle: "Sonic Mania",
+    },
+    papermariothousandyeardoorgeneral: {
+        forumId: "forum_1768933800059_avtb1p6wv",
+        title: "General Discussion",
+        gameTitle: "Paper Mario: The Thousand Year Door",
+    },
+    thewitcher3gameplay: {
+        forumId: "forum_1767897000052_eed5je85k",
+        title: "Gameplay",
+        gameTitle: "The Witcher 3: Wild Hunt",
+    },
+    discoelysiumgameplay: {
+        forumId: "forum_1765904400033_d1lmg3zfc",
+        title: "Gameplay",
+        gameTitle: "Disco Elysium",
+    },
+    pokemonlegendsarceusspeedruns: {
+        forumId: "forum_1767978000049_c3s29vdxt",
+        title: "Speedruns",
+        gameTitle: "Pokémon Legends: Arceus",
+    },
+    finalfantasyviigeneral: {
+        forumId: "forum_1768509900058_37e38rfq1",
+        title: "General Discussion",
+        gameTitle: "Final Fantasy VII",
+    },
+    genshinimpacthottakes: {
+        forumId: "forum_1769000400048_ey04dbquh",
+        title: "Hot Takes & Opinions",
+        gameTitle: "Genshin Impact",
+    },
+    tetrismechanics: {
+        forumId: "forum_1769000415285_bpobgyer2",
+        title: "Mechanics & Strategies",
+        gameTitle: "Tetris (Game Boy, 1989)",
+    },
+    hitmanbloodmoneyconsistency: {
+        forumId: "forum_1769004000050_53g3m2e86",
+        title: "PB Progress & Consistency",
+        gameTitle: "Hitman: Blood Money",
+    },
+    astrobottips: {
+        forumId: "forum_1769014800037_hvs35ue4b",
+        title: "Need Tips / Advice",
+        gameTitle: "Astro Bot",
+    },
+    supermeatboyfavmoments: {
+        forumId: "forum_1769018400039_m6uw30c47",
+        title: "Favorite Moments",
+        gameTitle: "Super Meat Boy",
+    },
+    ghostoftsushimatips: {
+        forumId: "forum_1769020200038_q0ctrmepu",
+        title: "Gameplay Tips & Tech",
+        gameTitle: "Ghost of Tsushima",
+    },
+    rivercitygirlswr: {
+        forumId: "forum_1769028300033_w2no4ltwi",
+        title: "World Record Discussion",
+        gameTitle: "River City Girls",
+    },
+    clairobscur33help: {
+        forumId: "forum_1769086800049_mw1fewvtk",
+        title: "Help & Troubleshooting",
+        gameTitle: "Clair Obscur: Expedition 33"
+    },
+    masseffect2story: {
+        forumId: "forum_1769086816404_oify78cu3",
+        title: "Characters & Story Talk",
+        gameTitle: "Mass Effect 2",
+    },
+    oriandtheblindforestbeginner: {
+        forumId: "forum_1769090400045_xjh8puzto",
+        title: "Beginner Questions",
+        gameTitle: "Ori and the Blind Forest",
+    },
+    dragonballfighterztips: {
+        forumId: "forum_1769101200039_tjusspu5y",
+        title: "Need Tips / Advice",
+        gameTitle: "Dragon Ball FighterZ",
+    },
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
 const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade3hero.forumId;
@@ -575,12 +875,45 @@ async function getWingmanDatabase() {
         console.error('Database connection is disconnected. State:', wingmanDB.readyState);
         throw new Error('Database connection is disconnected');
     }
-    // Access database - mongoose.Connection has .db property for native MongoDB driver
-    // Mongoose connections expose the native MongoDB driver via the .db property
-    // Type assertion to ensure TypeScript recognizes the native driver database
-    const db = wingmanDB.db;
+    // Ensure connection is ready (state 1 = connected)
+    if (wingmanDB.readyState !== 1) {
+        // Wait a bit for connection to be fully ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    // Access database - Mongoose 8+ connections expose the native MongoDB driver
+    // Use getClient().db() method which is the most reliable way
+    let db;
+    try {
+        // Mongoose 8+ has getClient() method - this is the most reliable way
+        if (typeof wingmanDB.getClient === 'function') {
+            const client = wingmanDB.getClient();
+            if (client && typeof client.db === 'function') {
+                db = client.db('vgWingman');
+            }
+        }
+        // Fallback: try .db property (should work if dbName was specified in connection)
+        if (!db && wingmanDB.db) {
+            db = wingmanDB.db;
+        }
+    }
+    catch (error) {
+        console.error('Error accessing database:', error);
+    }
     if (!db) {
         console.error('Database object not available - connection.db is undefined');
+        console.error('Connection readyState:', wingmanDB.readyState);
+        console.error('Connection has .db:', !!wingmanDB.db);
+        console.error('Connection has getClient:', typeof wingmanDB.getClient === 'function');
+        if (typeof wingmanDB.getClient === 'function') {
+            try {
+                const client = wingmanDB.getClient();
+                console.error('Client type:', typeof client);
+                console.error('Client has db method:', typeof client?.db === 'function');
+            }
+            catch (e) {
+                console.error('Error getting client:', e);
+            }
+        }
         throw new Error('Failed to access database - native driver database not available');
     }
     // Verify it's the native MongoDB driver database object
@@ -814,8 +1147,53 @@ function buildReplyTree(postsWithForum, userId) {
         transformed.forumId = forumId;
         transformed.gameTitle = gameTitle;
         transformed.forumTitle = forumTitle;
+        // Add category information
         if (category) {
             transformed.category = category;
+        }
+        // Extract category display name - prioritize SPLASH_PAGE_FORUMS title (contains exact category name)
+        // This handles both standard categories (e.g., "General Discussion", "Gameplay") 
+        // and unique category titles (e.g., "Hot Takes & Opinions", "Mechanics & Strategies")
+        let categoryDisplayName;
+        // First priority: Use title from SPLASH_PAGE_FORUMS (contains the exact category display name)
+        const splashForum = Object.values(SPLASH_PAGE_FORUMS).find(f => f.forumId === forumId);
+        if (splashForum && splashForum.title) {
+            // The title field in SPLASH_PAGE_FORUMS is the category name
+            // Examples: "General Discussion", "Gameplay", "Hot Takes & Opinions", "Need Tips / Advice"
+            categoryDisplayName = splashForum.title;
+        }
+        // Fallback: extract from forumTitle if not found in SPLASH_PAGE_FORUMS
+        if (!categoryDisplayName && forumTitle.includes(' - ')) {
+            const parts = forumTitle.split(' - ');
+            if (parts.length > 1) {
+                categoryDisplayName = parts.slice(1).join(' - ');
+            }
+        }
+        // Last fallback: format the database category field
+        if (!categoryDisplayName && category) {
+            // Map common category values to display names
+            const categoryMap = {
+                'gameplay': 'Gameplay',
+                'help': 'Help & Support',
+                'speedruns': 'Speedruns',
+                'mods': 'Mods',
+                'general': 'General Discussion',
+            };
+            const categoryLower = category.toLowerCase().trim();
+            if (categoryMap[categoryLower]) {
+                categoryDisplayName = categoryMap[categoryLower];
+            }
+            else {
+                // Format category: capitalize first letter of each word
+                categoryDisplayName = category
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');
+            }
+        }
+        // Always set categoryDisplayName if we have any category information
+        if (categoryDisplayName) {
+            transformed.categoryDisplayName = categoryDisplayName;
         }
         return transformed;
     });
