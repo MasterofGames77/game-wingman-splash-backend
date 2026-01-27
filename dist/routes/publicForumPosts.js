@@ -843,6 +843,161 @@ const SPLASH_PAGE_FORUMS = {
         title: "Need Tips / Advice",
         gameTitle: "Dragon Ball FighterZ",
     },
+    aceattorneygameplaytech: {
+        forumId: "forum_1769104800036_yn3rj2xli",
+        title: "Gameplay Tips & Tech",
+        gameTitle: "Phoenix Wright: Ace Attorney"
+    },
+    left4dead2graphics: {
+        forumId: "forum_1769104804445_kgph7jdm6",
+        title: "Graphics / Texture Mods",
+        gameTitle: "Left 4 Dead 2"
+    },
+    elderscrolls5pbprogress: {
+        forumId: "forum_1769106600130_pmdnzljd7",
+        title: "PB Progress & Consistency",
+        gameTitle: "The Elder Scrolls V: Skyrim"
+    },
+    blueprincetips: {
+        forumId: "forum_1769114700042_ej8ucltth",
+        title: "Tips and Discoveries",
+        gameTitle: "Blue Prince"
+    },
+    injustic2hottakes: {
+        forumId: "forum_1769173200043_vgazg7jx3",
+        title: "Hot Takes & Opinions",
+        gameTitle: "Injustice 2"
+    },
+    madden24builds: {
+        forumId: "forum_1769176800041_sf31644aa",
+        title: "Builds / Loadouts / Setups",
+        gameTitle: "Madden NFL 24"
+    },
+    supermario64mechanics: {
+        forumId: "forum_1769187600034_bd7cbq583",
+        title: "Mechanics & Strategies",
+        gameTitle: "Super Mario 64"
+    },
+    wwe2k22fixes: {
+        forumId: "forum_1769191200039_tpjyrfh3j",
+        title: "Fixes & Workarounds",
+        gameTitle: "WWE 2K22"
+    },
+    valheimoddingtools: {
+        forumId: "forum_1769191207244_k4144k20k",
+        title: "Modding Tools & Setup",
+        gameTitle: "Valheim"
+    },
+    slaythespirehelp: {
+        forumId: "forum_1769193000030_rr8c8cvx8",
+        title: "Help & Troubleshooting",
+        gameTitle: "Slay the Spire"
+    },
+    metalgearrisinghottakes: {
+        forumId: "forum_1769201101553_9nat54h0m",
+        title: "Hot Takes & Opinions",
+        gameTitle: "Metal Gear Rising: Revengeance"
+    },
+    spidermangameplay: {
+        forumId: "forum_1769259600055_n4916dm0x",
+        title: "Gameplay Tips & Tech",
+        gameTitle: "Marvel's Spider-Man"
+    },
+    warthunderadvancedtechniques: {
+        forumId: "forum_1769259605534_jq5hlr3yi",
+        title: "Advanced Techniques",
+        gameTitle: "War Thunder"
+    },
+    astrobotanypercent: {
+        forumId: "forum_1769263200052_skwoutfiv",
+        title: "Any% Route & Strats",
+        gameTitle: "Astro Bot"
+    },
+    conkurtimingwindo: {
+        forumId: "forum_1769274000034_74s2e561p",
+        title: "Timing Windows & Cycles",
+        gameTitle: "Conkur's Bad Fur Day"
+    },
+    wipeoutfavmoments: {
+        forumId: "forum_1769277600825_30q0johhq",
+        title: "Favorite Moments",
+        gameTitle: "Wipeout: Omega Collection"
+    },
+    sonicunleahsedfavmoments: {
+        forumId: "forum_1769277607038_06x8f1zmj",
+        title: "Favorite Moments",
+        gameTitle: "Sonic Unleashed"
+    },
+    masseffect2timingwindows: {
+        forumId: "forum_1769287500091_1nbilbjtb",
+        title: "Timing Windows & Cycles",
+        gameTitle: "Mass Effect 2"
+    },
+    aceattorneytips: {
+        forumId: "forum_1769346001164_ksje6qvc9",
+        title: "Tips and Discoveries",
+        gameTitle: "Phoenix Wright: Ace Attorney"
+    },
+    residentevil7mechanics: {
+        forumId: "forum_1769346007242_orekffjg5",
+        title: " Mechanics & Strategies",
+        gameTitle: "Resident Evil 7: Biohazard"
+    },
+    mlbtheshow20beginner: {
+        forumId: "orum_1769349600109_b3xhcfzme",
+        title: "Beginner Help Thread",
+        gameTitle: "MLB The Show 20"
+    },
+    fallguysgameplaytips: {
+        forumId: "forum_1769364008949_2flcz0kzx",
+        title: " Gameplay Tips & Tech",
+        gameTitle: "Fall Guys"
+    },
+    aceattorneyinvestigations: {
+        forumId: "forum_1769365800841_urw2hpgvo",
+        title: "Hot Takes & Opinions",
+        gameTitle: "Ace Attorney Investigations: Miles Edgeworth"
+    },
+    theroomfavmoments: {
+        forumId: "forum_1769373905108_3ivmn2z82",
+        title: "Favorite Moments",
+        gameTitle: "The Room (Game)"
+    },
+    uncharted3tips: {
+        forumId: "forum_1769432402034_3fikyh7ep",
+        title: "Tips and Discoveries",
+        gameTitle: "Uncharted 3: Drake's Deception"
+    },
+    nierautomataspoilers: {
+        forumId: "forum_1769436001075_62kdq3600",
+        title: "Spoilers and Discussion",
+        gameTitle: "NieR: Automata"
+    },
+    tetriss99hottakes: {
+        forumId: "forum_1769446801230_qfyp46t9c",
+        title: "Hot Takes & Opinions",
+        gameTitle: "Tetris 99"
+    },
+    injustic2beginner: {
+        forumId: "forum_1769450400050_1j5i5r63t",
+        title: "Beginner Help Thread",
+        gameTitle: "Injustice 2"
+    },
+    nhl14help: {
+        forumId: "forum_1769450405660_8d08hewav",
+        title: "Help & Troubleshooting",
+        gameTitle: "NHL 14"
+    },
+    streetsofrage4beginner: {
+        forumId: "forum_1769452200045_depa9qkds",
+        title: "Beginner Questions",
+        gameTitle: "Street of Rage 4"
+    },
+    sevendaystodie2beginner: {
+        forumId: "forum_1769460300038_fkitdfv4q",
+        title: "Beginner Questions",
+        gameTitle: "7 Days to Die"
+    }
 };
 // Default forum (Xenoblade Chronicles 3) for backward compatibility
 const DEFAULT_FORUM_ID = SPLASH_PAGE_FORUMS.xenoblade3hero.forumId;
