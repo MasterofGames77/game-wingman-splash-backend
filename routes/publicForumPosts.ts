@@ -995,6 +995,231 @@ const SPLASH_PAGE_FORUMS = {
     forumId: "forum_1769460300038_fkitdfv4q",
     title: "Beginner Questions",
     gameTitle: "7 Days to Die"
+  },
+  bloodstainedadvancedtech: {
+    forumId: "forum_1769518800059_juxi2da3x",
+    title: "Advanced Techniques",
+    gameTitle: "Bloodstained: Ritual of the Night"
+  },
+  wwe2k22movement: {
+    forumId: "forum_1769518806964_5tutkon63",
+    title: "Movement Tech & Shortcuts",
+    gameTitle: "WWE 2K22"
+  },
+  deadspacefixes: {
+    forumId: "forum_1769522400060_h7fkoltqq",
+    title: "Fixes & Workarounds",
+    gameTitle: "Dead Space"
+  },
+  thelastofusbuilds: {
+    forumId: "forum_1769533200036_8yvqq9g2a",
+    title: "Builds / Loadouts / Setups",
+    gameTitle: "The Last of Us"
+  },
+  nba2k11anypercent: {
+    forumId: "forum_1769536800035_e0hdhphaw",
+    title: "Any% Route & Strats",
+    gameTitle: "NBA 2K11"
+  },
+  returnalbeginner: {
+    forumId: "forum_1769536805643_z9hzdtvmp",
+    title: "Beginner Questions",
+    gameTitle: "Returnal"
+  },
+  assassinscreedvalhallagraphics: {
+    forumId: "forum_1769538601210_s5hyga62q",
+    title: "Graphics / Texture Mods",
+    gameTitle: "Assassin's Creed Valhalla"
+  },
+  candycrushsagawr: {
+    forumId: "forum_1769546700046_0uiizv961",
+    title: "World Record Discussion",
+    gameTitle: "Candy Crush Saga"
+  },
+  discoelysiummodding: {
+    forumId: "forum_1769605201571_bozjcug4r",
+    title: "Modding Tools & Setup",
+    gameTitle: "Disco Elysium"
+  },
+  nhl14favmoments: {
+    forumId: "forum_1769608801164_9w621ljhy",
+    title: "Favorite Moments",
+    gameTitle: "NHL 14"
+  },
+  tunichelp: {
+    forumId: "forum_1769619600069_h6nu1smqz",
+    title: "Help & Troubleshooting",
+    gameTitle: "Tunic"
+  },
+  injustic2gameplaytips: {
+    forumId: "forum_1769623200141_0z4tlsk6x",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Injustice 2"
+  },
+  powerwashsimulatormechanics: {
+    forumId: "forum_1769623206849_01cybq75y",
+    title: "Mechanics & Strategies",
+    gameTitle: "PowerWash Simulator"
+  },
+  assassinscreedvalhallabeginnerquestions: {
+    forumId: "forum_1769625000044_khiw04uxy",
+    title: "Beginner Questions",
+    gameTitle: "Assassin's Creed Valhalla"
+  },
+  nhl94help: {
+    forumId: "forum_1769691600045_uqmy9i9pc",
+    title: "Help & Troubleshooting",
+    gameTitle: "NHL 94"
+  },
+  geometrydashhottakes: {
+    forumId: "forum_1769691607241_pnhqemfym",
+    title: "Hot Takes & Opinions",
+    gameTitle: "Geometry Dash"
+  },
+  godofwarragnarokstuck: {
+    forumId: "forum_1769695200037_jd7zk3woh",
+    title: "Stuck? Ask Here",
+    gameTitle: "God of War Ragnarök"
+  },
+  goldenaxefixes: {
+    forumId: "forum_1769706000177_lm1z0q3v6",
+    title: "Fixes & Workarounds",
+    gameTitle: "Golden Axe"
+  },
+  phoenixwrightaceattorneyhelp: {
+    forumId: "forum_1769709606492_n5cdkbnnk",
+    title: "Help & Troubleshooting",
+    gameTitle: "Phoenix Wright: Ace Attorney"
+  },
+  fatalfurycityofthewolvesgameplay: {
+    forumId: "forum_1769711400035_z4whhzldu",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Fatal Fury: City of the Wolves"
+  },
+  mariosuperstarbaseballfixes: {
+    forumId: "forum_1769719500031_jkv6v0ph0",
+    title: "Fixes & Workarounds",
+    gameTitle: "Mario Superstar Baseball"
+  },
+  soulcalibur2spoilers: {
+    forumId: "forum_1769778001155_1ve7ovrgt",
+    title: "Spoilers and Discussion",
+    gameTitle: "Soulcalibur II"
+  },
+  neonwhitebeginner: {
+    forumId: "forum_1769778006236_65sffm6er",
+    title: "Beginner Questions",
+    gameTitle: "Neon White"
+  },
+  sakurawarsgameplay: {
+    forumId: "forum_1769781600046_dpyln0sg0",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Sakura Wars (2019)"
+  },
+  doubledragonspoilers: {
+    forumId: "forum_1769796001783_9lqysvi69",
+    title: "Spoilers and Discussion",
+    gameTitle: "Double Dragon"
+  },
+  metalgearsolid2mechanics: {
+    forumId: "forum_1769805900034_pfbl3bcob",
+    title: "Mechanics & Strategies",
+    gameTitle: "Metal Gear Solid 2: Sons of Liberty"
+  },
+  deadoralive3beginner: {
+    forumId: "forum_1769864416759_64lsig7kf",
+    title: "Beginner Help Thread",
+    gameTitle: "Dead or Alive 3"
+  },
+  hadesIIpersonalbest: {
+    forumId: "forum_1769878800056_vdu2w02zb",
+    title: "PB Progress & Consistency",
+    gameTitle: "Hades II"
+  },
+  dustpersonalbest: {
+    forumId: "forum_1769882400039_4rt34c9m9",
+    title: "PB Progress & Consistency",
+    gameTitle: "Dust: An Elysian Tail"
+  },
+  soulcalibur2anypercent: {
+    forumId: "forum_1769882403798_grzanx1li",
+    title: "Any% Route & Strats",
+    gameTitle: "Soulcalibur II"
+  },
+  untildawnanypercent: {
+    forumId: "forum_1769884200161_ydzjntb4k",
+    title: "Any% Route & Strats",
+    gameTitle: "Until Dawn"
+  },
+  uncharted3beginner: {
+    forumId: "forum_1769892300029_vrme0srhx",
+    title: "Beginner Questions",
+    gameTitle: "Uncharted 3: Drake's Deception"
+  },
+  arksurvivalworldrecord: {
+    forumId: "forum_1769954400104_w26yf0thn",
+    title: "World Record Discussion",
+    gameTitle: "ARK: Survival Evolved"
+  },
+  hadesbeginner: {
+    forumId: "forum_1769965200038_ff29ra2nx",
+    title: "Beginner Questions",
+    gameTitle: "Hades"
+  },
+  powerwashsimulatoroptimal: {
+    forumId: "forum_1769968800089_8h793glhw",
+    title: "Optimal Playthroughs & Routes",
+    gameTitle: "PowerWash Simulator"
+  },
+  uncharted3optimal: {
+    forumId: "forum_1769968804720_pk7n8xsdq",
+    title: "Optimal Playthroughs & Routes",
+    gameTitle: "Uncharted 3: Drake's Deception"
+  },
+  arksurvivalmodinstallation: {
+    forumId: "forum_1769970600589_z1qchc7ed",
+    title: "Mod Installation & Compatibility",
+    gameTitle: "ARK: Survival Evolved"
+  },
+  riskofrain2beginner: {
+    forumId: "forum_1769978700031_5q2oh4c0f",
+    title: "Beginner Questions",
+    gameTitle: "Risk of Rain 2"
+  },
+  azurestrikergunvoltspoilers: {
+    forumId: "forum_1770037201911_5dkzrvuuo",
+    title: "Spoilers and Discussion",
+    gameTitle: "Azure Striker Gunvolt"
+  },
+  dragonquest3hd2dtechniques: {
+    forumId: "forum_1770037213438_4m9le8y04",
+    title: "Advanced Techniques",
+    gameTitle: "Dragon Quest III HD-2D Remake"
+  },
+  thewitnessstory: {
+    forumId: "forum_1770040803075_o65lnbr93",
+    title: "Characters & Story Talk",
+    gameTitle: "The Witness (Game)"
+  },
+  deadcellsstory: {
+    forumId: "forum_1770051601077_pnpkrf1yc",
+    title: "Characters & Story Talk",
+    gameTitle: "Dead Cells"
+  },
+  nhl94movementtech: {
+    forumId: "forum_1770055205761_brcv1iqmx",
+    title: "Movement Tech & Shortcuts",
+    gameTitle: "NHL 94"
+  },
+  nbajam93advancedtech: {
+    forumId: "forum_1770057000031_up359rfka",
+    title: "Advanced Techniques",
+    gameTitle: "NBA Jam (1993)"
+  },
+  arksurvivalstorytalk: {
+    forumId: "forum_1770065101027_mho4ey98u",
+    title: "Characters & Story Talk",
+    gameTitle: "ARK: Survival Evolved"
   }
 };
 
