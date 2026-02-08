@@ -1220,6 +1220,161 @@ const SPLASH_PAGE_FORUMS = {
     forumId: "forum_1770065101027_mho4ey98u",
     title: "Characters & Story Talk",
     gameTitle: "ARK: Survival Evolved"
+  },
+  guildwars2gameplay: {
+    forumId: "forum_1770123600044_06ma00u1c",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Guild Wars 2"
+  },
+  chroniclesofriddick: {
+    forumId: "forum_1770123606856_ajuv0mr53",
+    title: "Beginner Questions",
+    gameTitle: "The Chronicles of Riddick: Escape from Butcher Bay"
+  },
+  dokidokiliteraturemechanics: {
+    forumId: "forum_1770138000033_4k5nq5kk6",
+    title: "Mechanics & Strategies",
+    gameTitle: "Doki Doki Literature Club"
+  },
+  devilmaycry3mechanics: {
+    forumId: "forum_1770141600044_3upkkgsg9",
+    title: "Mechanics & Strategies",
+    gameTitle: "Devil May Cry 3: Special Edition"
+  },
+  babaisyouadvancedtech: {
+    forumId: "forum_1770141614928_4fxt4n7e6",
+    title: "Advanced Techniques",
+    gameTitle: "Baba is You"
+  },
+  dragonballfighterzbestmods: {
+    forumId: "forum_1770143400782_2001564pe",
+    title: "Best Mods & Recommendations",
+    gameTitle: "Dragon Ball FighterZ"
+  },
+  fightnragemods: {
+    forumId: "forum_1770213601144_m81p1jby6",
+    title: "Mods",
+    gameTitle: "Fight'N Rage"
+  },
+  fireemblemawakeningoptimal: {
+    forumId: "forum_1770224400034_ik5h2s6u8",
+    title: "Optimal Playthroughs & Routes",
+    gameTitle: "Fire Emblem Awakening"
+  },
+  ratchetupyourarsenalbuilds: {
+    forumId: "forum_1770228008741_es8er49c9",
+    title: "Builds / Loadouts / Setups",
+    gameTitle: "Ratchet & Clank: Up Your Arsenal"
+  },
+  papermariothousandyeardooradvancedtech: {
+    forumId: "forum_1770229800034_6dghom9w2",
+    title: "Advanced Techniques",
+    gameTitle: "Paper Mario: The Thousand Year Door"
+  },
+  discoelysiumbeginner: {
+    forumId: "forum_1770237900031_4z03g7vqx",
+    title: "Beginner Questions",
+    gameTitle: "Disco Elysium"
+  },
+  forzahorizon5beginner: {
+    forumId: "forum_1770296400095_4l8khyoj7",
+    title: "Beginner Help Thread",
+    gameTitle: "Forza Horizon 5"
+  },
+  turnipboytaxevasionbeginner: {
+    forumId: "forum_1770300000068_tqowsobei",
+    title: "Beginner Questions",
+    gameTitle: "Turnip Boy Commits Tax Evasion"
+  },
+  phoenixwrighttrialstribulationshottakes: {
+    forumId: "forum_1770310801313_xcgd0grge",
+    title: "Hot Takes & Opinions",
+    gameTitle: "Phoenix Wright: Ace Attorney - Trials and Tribulations"
+  },
+  valheimspoilers: {
+    forumId: "forum_1770314413670_1w0samuaf",
+    title: "Spoilers and Discussion",
+    gameTitle: "Valheim"
+  },
+  neonwhitegameplayoverhaul: {
+    forumId: "forum_1770316201291_n7bmos2fq",
+    title: "Gameplay Overhauls",
+    gameTitle: "Neon White"
+  },
+  bindingofissacafterbirthmechanics: {
+    forumId: "forum_1770324300110_pvwfg71p6",
+    title: "Mechanics & Strategies",
+    gameTitle: "The Binding of Issac: Afterbirth+"
+  },
+  residentevil7favmoments: {
+    forumId: "forum_1770382801902_w9b6flet1",
+    title: "Favorite Moments",
+    gameTitle: "Resident Evil 7: Biohazard"
+  },
+  vampiremasquerademoddingtools: {
+    forumId: "forum_1770382810583_l8lz1y6m5",
+    title: "Modding Tools & Setup",
+    gameTitle: "Vampire: The Masquerade – Bloodhunt"
+  },
+  nhl94hottakes: {
+    forumId: "forum_1770386400994_kg6fvwpp2",
+    title: "Hot Takes & Opinions",
+    gameTitle: "NHL 94"
+  },
+  dragonquest5builds: {
+    forumId: "forum_1770397200044_g0xyusdlm",
+    title: "Builds / Loadouts / Setups",
+    gameTitle: "Dragon Quest V: Hand of the Heavenly Bride"
+  },
+  thelastofuspart2spoilers: {
+    forumId: "forum_1770400801186_iumlx8y51",
+    title: "Spoilers and Discussion",
+    gameTitle: "The Last of Us Part II"
+  },
+  discoelysiumstuck: {
+    forumId: "forum_1770400806423_yv0d0p5zx",
+    title: "Stuck? Ask Here",
+    gameTitle: "Disco Elysium"
+  },
+  fireemblemawakeninggrapnichsmods: {
+    forumId: "forum_1770402601129_k164jley5",
+    title: "Graphics / Texture Mods",
+    gameTitle: "Fire Emblem Awakening"
+  },
+  pokemonplatinumbeginner: {
+    forumId: "forum_1770410700031_7l7zgmq3p",
+    title: "Beginner Questions",
+    gameTitle: "Pokémon Platinum"
+  },
+  yakuza2005tips: {
+    forumId: "forum_1770469201986_yg1qou2yc",
+    title: "Tips and Discoveries",
+    gameTitle: "Yakuza (2005)"
+  },
+  wiisportsworldrecorddiscussion: {
+    forumId: "forum_1770469215100_7bo9g4e15",
+    title: "World Record Discussion",
+    gameTitle: "Wii Sports"
+  },
+  devilmaycry5modinstallation: {
+    forumId: "forum_1770472800727_xxysw2mtz",
+    title: "Mod Installation & Compatibility",
+    gameTitle: "Devil May Cry 5"
+  },
+  balatroneedtips: {
+    forumId: "forum_1770483600054_px9g8oj9w",
+    title: "Need Tips / Advice",
+    gameTitle: "Balatro"
+  },
+  ratchetriftapartbeginnerhelp: {
+    forumId: "forum_1770489000079_n9ht2j0u2",
+    title: "Beginner Help Thread",
+    gameTitle: "Ratchet & Clank: Rift Apart"
+  },
+  nbajam1993needtips: {
+    forumId: "forum_1770497100033_m351zg4z7",
+    title: "Need Tips / Advice",
+    gameTitle: "NBA Jam (1993)"
   }
 };
 
