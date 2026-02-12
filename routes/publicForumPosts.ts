@@ -1375,6 +1375,126 @@ const SPLASH_PAGE_FORUMS = {
     forumId: "forum_1770497100033_m351zg4z7",
     title: "Need Tips / Advice",
     gameTitle: "NBA Jam (1993)"
+  },
+  phasmophobiaoptimalplaythroughs: {
+    forumId: "forum_1770555605671_cvzivy0yt",
+    title: "Optimal Playthroughs & Routes",
+    gameTitle: "Phasmophobia"
+  },
+  thelastofuspart2advancedtech: {
+    forumId: "forum_1770559200053_566mr9t27",
+    title: "Advanced Techniques",
+    gameTitle: "The Last of Us Part II"
+  },
+  eurotrucksim2gameplaytips: {
+    forumId: "forum_1770570000037_kl4r9vt2t",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Euro Truck Simulator 2"
+  },
+  soulcalibur2helpthread: {
+    forumId: "forum_1770573600041_xblpu3m8j",
+    title: "Beginner Help Thread",
+    gameTitle: "Soulcalibur II"
+  },
+  maddennfl2005help: {
+    forumId: "forum_1770573604140_lpzpdmpxp",
+    title: "Help & Troubleshooting",
+    gameTitle: "Madden NFL 2005"
+  },
+  oriandtheblindforestneedtips: {
+    forumId: "forum_1770583500039_bcgha1uqq",
+    title: "Need Tips / Advice",
+    gameTitle: "Ori and the Blind Forest"
+  },
+  shantaepiratescurseworldrecord: {
+    forumId: "forum_1770642000059_jdoxt0gxw",
+    title: "World Record Discussion",
+    gameTitle: "Shantae and the Pirate's Curse"
+  },
+  maddennfl2005beginnerquestions: {
+    forumId: "forum_1770645600046_kcure1wvp",
+    title: "Beginner Questions",
+    gameTitle: "Madden NFL 2005"
+  },
+  coffeetalkbeginnerhelp: {
+    forumId: "forum_1770656400043_1j2i1lydl",
+    title: "Beginner Help Thread",
+    gameTitle: "Coffee Talk"
+  },
+  pacmanworld2anypercent: {
+    forumId: "forum_1770660006326_0udfs7hdg",
+    title: "Any% Route & Strats",
+    gameTitle: "Pac-Man World 2"
+  },
+  pathofexilemods: {
+    forumId: "forum_1770661800978_rl464ipni",
+    title: "Mods",
+    gameTitle: "Path of Exile"
+  },
+  fireemblemawakeningtips: {
+    forumId: "forum_1770728407322_o2c03x67u",
+    title: "Tips and Discoveries",
+    gameTitle: "Fire Emblem Awakening"
+  },
+  proevolutionsoccer2008mechanics: {
+    forumId: "forum_1770742800032_9smzt0138",
+    title: "Mechanics & Strategies",
+    gameTitle: "Pro Evolution Soccer 2008"
+  },
+  tombraider2013builds: {
+    forumId: "forum_1770746400042_enf8002jw",
+    title: "Builds / Loadouts / Setups",
+    gameTitle: "Tomb Raider (2013)"
+  },
+  sinandpunishmentgameplaytips: {
+    forumId: "forum_1770746406171_6a9fakozq",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Sin and Punishment"
+  },
+  newpokemonsnapneedtips: {
+    forumId: "forum_1770748200037_1ey3nb6h9",
+    title: "Need Tips / Advice",
+    gameTitle: "New Pokémon Snap"
+  },
+  megamanzero3advancedtech: {
+    forumId: "forum_1770756300033_3uraakyk8",
+    title: "Advanced Techniques",
+    gameTitle: "Megaman Zero 3"
+  },
+  dayzadvancedtech: {
+    forumId: "forum_1770814800054_60e1rjisa",
+    title: "Advanced Techniques",
+    gameTitle: "DayZ"
+  },
+  scottpilgrimthegamecharacters: {
+    forumId: "forum_1770818400909_madmd5k6r",
+    title: "Characters & Story Talk",
+    gameTitle: "Scott Pilgrim vs the World: The Game"
+  },
+  guacameleefixes: {
+    forumId: "forum_1770829200032_xv32md5px",
+    title: "Fixes & Workarounds",
+    gameTitle: "Guacamelee!"
+  },
+  minecraftbeginnerquestions: {
+    forumId: "forum_1770832800035_uxwgdt5cm",
+    title: "Beginner Questions",
+    gameTitle: "Minecraft"
+  },
+  kingdomhearts2hdremixgameplaytips: {
+    forumId: "forum_1770832806605_obx6iismb",
+    title: "Gameplay Tips & Tech",
+    gameTitle: "Kingdom Hearts HD 2.5 ReMix"
+  },
+  streetfighter6mechanics: {
+    forumId: "forum_1770834600031_s9gt02ouv",
+    title: "Mechanics & Strategies",
+    gameTitle: "Street Fighter 6"
+  },
+  batmanarkhamasylummechanics: {
+    forumId: "forum_1770842700044_nkewp17lm",
+    title: "Mechanics & Strategies",
+    gameTitle: "Batman: Arkham Asylum"
   }
 };
 
